@@ -1,6 +1,6 @@
 ---
 name: sub-agent-builder
-description: "Scaffold a new DovePaw background agent end-to-end. Creates agent files in ~/.dovepaw/tmp/ so the agent appears immediately in the Kiln sidebar group, ready to test. Optionally publishes to a plugin repo. Use when asked to 'create a new agent', 'scaffold an agent', 'add a new background agent', 'build a new daemon', or when the user wants to automate a recurring or on-demand task with a DovePaw agent."
+description: "Scaffold a new Dove agent end-to-end. Creates agent files in agent-local/<name>/ so the agent appears in the sidebar on next dev server restart. Use when asked to 'create a new agent', 'scaffold an agent', 'add a new background agent', 'build a new daemon', or when the user wants to automate a recurring or on-demand task with a Dove agent."
 argument-hint: "Optional: agent name and/or purpose description"
 allowed-tools: Read, Write, Edit, Bash(mkdir *), Bash(python3 *), Bash(ls *), Bash(cat *), Glob, Grep, AskUserQuestion
 hooks:
@@ -16,7 +16,6 @@ hooks:
 
 ## System Requirements
 
-- DovePaw must be installed (`~/.dovepaw/` must exist)
 - Read `~/.dovepaw/settings.json` to discover configured repositories before Round 2 questions
 
 ---
@@ -25,11 +24,10 @@ hooks:
 
 ### Phase 1 — Requirements Gathering
 
-**Round 1** — parse `$ARGUMENTS` first, then ask 3 questions in a single `AskUserQuestion` call:
+**Round 1** — parse `$ARGUMENTS` first, then ask 2 questions in a single `AskUserQuestion` call:
 
 1. **Purpose** — "What should this agent do?" — free text via Other
-2. **Plugin repo** — "Which plugin repo will this agent eventually live in?" — run `ls ~/.dovepaw/plugins/` and offer each dir basename as an option, plus "None / decide later"
-3. **Agent type** — "Which pattern fits this agent?" — present 4 options with code previews:
+2. **Agent type** — "Which pattern fits this agent?" — present 4 options with code previews:
    - **Simple** — single agent spawn with a short inline prompt. Use when the task is trivial (< 15 prompt lines) and needs no separate skill file. Set `model: "gpt-5.5"` to use Codex instead of Claude. **If the agent needs repository access or worktree isolation, use Claude (default) — Codex does not support worktrees.**
    - **Static Skill** (Recommended for multi-step agents) — `main.ts` is a thin launcher; all task logic lives in a `SKILL.md` in the `skills/` folder. `main.ts` invokes it via `Skill("/skill-name ${INSTRUCTION}")`. Use this when the prompt is substantial (> 15 lines), multi-phase, or the skill should be independently invocable as `/skill-name`.
    - **Dynamic Skill** — `main.ts` pre-fetches runtime data (PR branches, CI failures, API status), injects it into a temporary skill built in memory, runs Claude, then deletes the skill dir. **Only use when the pre-fetched data must be structurally embedded in the skill body** — not merely for passing the user's instruction through (Static Skill handles that cleanly).
@@ -99,7 +97,7 @@ All agent functions that perform I/O must be `async`. Synchronous I/O (`readFile
 
 **Always prefer `@dovepaw/agent-sdk` over custom implementations:**
 
-Before writing any utility code, read `~/.dovepaw/sdk/src/index.ts` to get the current list of SDK exports. Never re-implement what the SDK already provides — if a function, constant, or type exists there, import and use it.
+Before writing any utility code, read `packages/agent-sdk/src/index.ts` to get the current list of SDK exports. Never re-implement what the SDK already provides — if a function, constant, or type exists there, import and use it.
 
 **Workspace is always fresh:**
 
@@ -151,7 +149,7 @@ Ask 1 question via `AskUserQuestion`:
 
 - **Icon** — "Which icon suits this agent best?" — suggest 4 options inferred from purpose: analytics/reasoning → `Brain`, automation → `Zap`, alerts/incidents → `BellRing`, docs → `FileText`, code → `GitMerge`, search → `Search`, time → `Clock`, data → `Database`
 
-Create `~/.dovepaw/tmp/<name>/agent.json` using the template in `references/agent-registration.md`.
+Create `agent-local/<name>/agent.json` using the template in `references/agent-registration.md`.
 
 Fill in all fields:
 
@@ -174,13 +172,13 @@ Fill in all fields:
      - **Input needed** (e.g. ticket number, URL, repo name): prompt = `"Run {{DISPLAY_NAME}} — I'll need a few details from you: {{what to ask}}"` — phrase it as an invitation so the user knows to provide the missing info
   4. **What does it need?** — title `"What does it need?"`, prompt = `"What does {{DISPLAY_NAME}} need to run? List its dependencies, required env vars, and any setup steps."` — always fixed, no variation needed
 
-Do NOT set `pluginPath` — that is added at publish time.
+Do NOT set `pluginPath`.
 
 **Phase 3 gate — verify before proceeding:**
 
 - [ ] All required fields present: `name`, `alias`, `displayName`, `description`, `personality`, `schedulingEnabled`, `repos`, `envVars`, `iconName`, `iconBg`, `iconColor`, `doveCard`, `suggestions`
 - [ ] `pluginPath` is NOT set
-- [ ] Every `envVars` entry has an `id` UUID (missing `id` silently drops the agent from Kiln)
+- [ ] Every `envVars` entry has an `id` UUID (missing `id` silently drops the entry from the schema)
 - [ ] Icon values match an actual entry in `references/agent-registration.md`
 
 Fix any failures before continuing.
@@ -190,10 +188,11 @@ After writing `agent.json`, bootstrap the agent's `node_modules` so `@dovepaw/ag
 ```bash
 python3 -c "
 import os
-base = os.path.expanduser('~/.dovepaw/tmp/<name>')
+project_dir = os.environ.get('CLAUDE_PROJECT_DIR', os.getcwd())
+base = os.path.join(project_dir, 'agent-local', '<name>')
 pkg_dir = os.path.join(base, 'node_modules', '@dovepaw')
 os.makedirs(pkg_dir, exist_ok=True)
-sdk_target = os.path.expanduser('~/.dovepaw/sdk')
+sdk_target = os.path.join(project_dir, 'packages', 'agent-sdk')
 link = os.path.join(pkg_dir, 'agent-sdk')
 if not os.path.exists(link):
     os.symlink(sdk_target, link)
@@ -223,13 +222,13 @@ If the user selects **Yes**, proceed to create the skill:
 
 #### Skill file location
 
-When building a tmp agent, skill files live in a `skill/` subdirectory — separate from the agent source files:
+Skill files live in a `skill/` subdirectory inside the agent folder:
 
 ```
-~/.dovepaw/tmp/<name>/               ← agent source (main.ts, agent.json, run.ts, etc.)
-~/.dovepaw/tmp/<name>/skill/         ← skill files (SKILL.md, references/, scripts/, etc.)
-~/.claude/skills/<name>/             ← symlink pointing to ~/.dovepaw/tmp/<name>/skill/
-~/.codex/skills/<name>/              ← symlink pointing to ~/.dovepaw/tmp/<name>/skill/
+agent-local/<name>/               ← agent source (main.ts, agent.json, run.ts, etc.)
+agent-local/<name>/skill/         ← skill files (SKILL.md, references/, scripts/, etc.)
+~/.claude/skills/<name>/          ← symlink pointing to agent-local/<name>/skill/
+~/.codex/skills/<name>/           ← symlink pointing to agent-local/<name>/skill/
 ```
 
 Create the `skill/` dir and symlinks with Python (bypasses shell permission checks):
@@ -237,7 +236,8 @@ Create the `skill/` dir and symlinks with Python (bypasses shell permission chec
 ```bash
 python3 -c "
 import os
-skill_dir = os.path.expanduser('~/.dovepaw/tmp/<name>/skill')
+project_dir = os.environ.get('CLAUDE_PROJECT_DIR', os.getcwd())
+skill_dir = os.path.join(project_dir, 'agent-local', '<name>', 'skill')
 os.makedirs(skill_dir, exist_ok=True)
 for skills_root in ['~/.claude/skills/<name>', '~/.codex/skills/<name>']:
     link = os.path.expanduser(skills_root)
@@ -247,13 +247,7 @@ for skills_root in ['~/.claude/skills/<name>', '~/.codex/skills/<name>']:
 "
 ```
 
-Write `SKILL.md` (and any `references/`, `scripts/` subdirs) inside `~/.dovepaw/tmp/<name>/skill/`.
-
-When publishing to a plugin repo:
-
-```
-skills/<name>/SKILL.md               ← inside plugin repo
-```
+Write `SKILL.md` (and any `references/`, `scripts/` subdirs) inside `agent-local/<name>/skill/`.
 
 Read `references/skill-authoring.md` for the SKILL.md schema, argument patterns, output contracts, subdirectory conventions, and hooks.
 
@@ -301,19 +295,6 @@ Skills that are called by agents in a loop (fix → test → retry) must emit a 
 
 Skills called for their side effects only (write file, open PR) need no structured output — plain text completion is fine.
 
-#### Plugin manifest
-
-When publishing to a plugin repo, add the skill name to `dovepaw-plugin.json`:
-
-```json
-{
-  "agents": ["my-agent"],
-  "skills": ["my-agent"]
-}
-```
-
-Skills and agents are listed independently — a skill can exist without a same-named agent, and vice versa.
-
 **Phase 4 gate** (only if a skill was created) **— verify before proceeding:**
 
 - [ ] SKILL.md frontmatter has `name`, `description`, and `argument-hint`; schema matches https://code.claude.com/docs/en/skills.md
@@ -332,8 +313,8 @@ Read `references/integration-checklist.md` now for lint/fmt commands and path re
 
 Read each created file back and verify against this checklist. Fix any issue found, then re-check until every item passes:
 
-- **main.ts** — all `{{PLACEHOLDER}}` values substituted; spawning pattern matches the chosen Option A/B/C; `INSTRUCTION` is passed through to Claude; no dead branches; `publishStatusToUI` called at meaningful steps (awaited); subprocess env is correct (no `CLAUDECODE`, clean PATH)
-- **agent.json** — all required fields present; `pluginPath` is NOT set; every entry in `envVars` has an `id` UUID (missing `id` causes Zod to silently drop the agent from the Kiln group)
+- **main.ts** — all `{{PLACEHOLDER}}` values substituted; spawning pattern matches the chosen Option A/B/C; `INSTRUCTION` is passed through to Claude; no dead branches; `publishStatusToUI` called at meaningful steps (awaited); subprocess env is correct (no `CLAUDECODE`, clean PATH); every `runner.run()` call supplies BOTH `claudeOpts` AND `codexOpts`
+- **agent.json** (`agent-local/<name>/agent.json`) — all required fields present; `pluginPath` is NOT set; every entry in `envVars` has an `id` UUID; all `envVars[*].value` are `""` (no secrets in source — filled via Settings UI at runtime)
 - **SKILL.md** (if created) — frontmatter is valid for Claude Code; argument pattern is documented; output contract is defined
 
 End with a confidence score JSON on its own line:
@@ -344,41 +325,26 @@ End with a confidence score JSON on its own line:
 
 The Stop hook requires `confidence >= 90` to proceed. Emit this only after all fixes are complete — it must reflect the post-fix state.
 
-Tell the user: "Your agent is ready. **Refresh the page** to see it appear under the **Kiln** group in the sidebar (Sparkles icon)."
+Tell the user: "Your agent is ready. **Restart the dev server** (`npm run dev`) to see it appear in the sidebar."
 
 Ask 1 question via `AskUserQuestion`:
 
-- **Restart A2A servers?** — "Restart DovePaw A2A servers to register the new agent?" — options:
-  - Yes — restart `npm run chatbot:servers` now (Recommended)
+- **Restart dev server?** — "Restart the dev server to register the new agent?" — options:
+  - Yes — run `npm run dev` now (Recommended)
   - No, I'll handle it later
 
-If the user selects **Yes**, remind them to run `npm run chatbot:servers` in the DovePaw project root to start the new agent's A2A server.
+If the user selects **Yes**, remind them to run `npm run dev` in the project root.
 
 ---
 
-### Phase 6 — Publish to Plugin Repo
+### Phase 6 — Activate Scheduler (if applicable)
 
-Ask 2 questions in a single `AskUserQuestion` call:
+**Skip Phase 6 entirely** if `schedulingEnabled` is `false` — no scheduler setup needed.
 
-1. "Move agent from Kiln to plugin repo and push?" — options:
-   - Yes, move and push now (Recommended)
-   - Move locally only, push later
-   - Keep in Kiln for now
+If scheduling was enabled, ask 1 question via `AskUserQuestion`:
 
-2. "Install and restart DovePaw servers?" — options:
-   - Yes — run `npm run install` + restart servers (Recommended)
-   - No, I'll handle it later
+- **Install scheduler?** — "Run `npm run install` to activate the agent's scheduler entry?" — options:
+  - Yes — run `npm run install` now (Recommended)
+  - No, I'll handle it later
 
-**If publishing:**
-
-1. Determine plugin repo path from user's Round 1 answer (or ask again if "None" was chosen)
-2. Create `agents/<name>/` in the plugin repo dir
-3. Copy `~/.dovepaw/tmp/<name>/main.ts` → `agents/<name>/main.ts`
-4. Copy `~/.dovepaw/tmp/<name>/agent.json` → `agents/<name>/agent.json`, add `"pluginPath": "<abs-plugin-repo-path>"`
-5. Read `dovepaw-plugin.json` in the plugin repo, add `"<name>"` to the `agents` array, write back
-6. `git add agents/<name>/ dovepaw-plugin.json && git commit -m "feat: add <name> agent" && git push` (in plugin repo dir)
-7. Remove `~/.dovepaw/tmp/<name>/` so agent exits the Kiln group
-
-**If installing:** run `npm run install` in the DovePaw project root (confirm with user before running).
-
-Always remind: restart `npm run chatbot:servers` to register the new A2A server.
+If the user selects **Yes**, remind them to run `npm run install` in the project root, then restart `npm run dev`.
