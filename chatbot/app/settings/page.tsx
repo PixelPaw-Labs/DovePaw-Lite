@@ -6,10 +6,7 @@ import { readAgentConfigEntries } from "@@/lib/agents-config";
 export const metadata = { title: "Settings — DovePaw" };
 
 export default async function SettingsPage() {
-  const [settings, agentEntries] = await Promise.all([
-    readSettings(),
-    readAgentConfigEntries(),
-  ]);
+  const [settings, agentEntries] = await Promise.all([readSettings(), readAgentConfigEntries()]);
   const allAgentEntries = agentEntries;
   const scheduledAgentEntries = agentEntries.filter((a) => a.schedulingEnabled !== false);
   const initialAgentRepos: Record<string, string[]> = Object.fromEntries(

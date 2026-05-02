@@ -81,7 +81,6 @@ export function upsertSession(args: UpsertSessionArgs): void {
   });
 }
 
-
 export function getSessionStatus(id: string): SessionStatus | null {
   return sessions.get(id)?.status ?? null;
 }

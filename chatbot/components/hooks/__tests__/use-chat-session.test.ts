@@ -85,15 +85,13 @@ describe("useChatSession", () => {
   });
 
   it("sendMessage stores sessionId from session event", async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
-      .mockResolvedValueOnce(
-        makeSseResponse([
-          { type: "session", sessionId: "srv-sess-1" },
-          { type: "result", content: "hi" },
-          { type: "done" },
-        ]),
-      );
+    vi.mocked(fetch).mockResolvedValueOnce(
+      makeSseResponse([
+        { type: "session", sessionId: "srv-sess-1" },
+        { type: "result", content: "hi" },
+        { type: "done" },
+      ]),
+    );
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -109,9 +107,7 @@ describe("useChatSession", () => {
     const firstPending = new Promise<Response>((r) => {
       resolveFirst = r;
     });
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
-      .mockReturnValueOnce(firstPending);
+    vi.mocked(fetch).mockReturnValueOnce(firstPending);
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -140,7 +136,6 @@ describe("useChatSession", () => {
       resolveStream = r;
     });
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       .mockReturnValueOnce(pending)
       .mockResolvedValueOnce(new Response("{}", { status: 200 })); // DELETE
 
@@ -163,7 +158,6 @@ describe("useChatSession", () => {
 
   it("cancelMessage sends DELETE to agent endpoint when sessionId is set", async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       .mockResolvedValueOnce(
         makeSseResponse([{ type: "session", sessionId: "cancel-sess" }, { type: "done" }]),
       )
@@ -191,8 +185,9 @@ describe("useChatSession", () => {
   // ─── newSession ─────────────────────────────────────────────────────────────
 
   it("newSession resets all state", async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(makeSseResponse([{ type: "result", content: "hi" }, { type: "done" }]));
+    vi.mocked(fetch).mockResolvedValueOnce(
+      makeSseResponse([{ type: "result", content: "hi" }, { type: "done" }]),
+    );
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -218,14 +213,12 @@ describe("useChatSession", () => {
       { id: "u1", role: "user", segments: [{ type: "text", content: "hello" }] },
       { id: "a1", role: "assistant", segments: [{ type: "text", content: "world" }] },
     ];
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ messages: dbMessages, progress: [], resumeSeq: 0, status: "done" }),
-          { status: 200 },
-        ),
-      );
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ messages: dbMessages, progress: [], resumeSeq: 0, status: "done" }),
+        { status: 200 },
+      ),
+    );
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -247,7 +240,6 @@ describe("useChatSession", () => {
       },
     ];
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -279,14 +271,12 @@ describe("useChatSession", () => {
   });
 
   it("setSessionId reconnects via polling when no resumeHint (A2A session)", async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ messages: [], progress: [], resumeSeq: 0, status: "running" }),
-          { status: 200 },
-        ),
-      );
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ messages: [], progress: [], resumeSeq: 0, status: "running" }),
+        { status: 200 },
+      ),
+    );
 
     const { result } = renderHook(() => useChatSession("my-agent"));
 
@@ -313,7 +303,6 @@ describe("useChatSession", () => {
       resolveFirst = r;
     });
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       .mockReturnValueOnce(firstPending)
       .mockResolvedValueOnce(
         makeSseResponse([{ type: "result", content: "queued reply" }, { type: "done" }]),
@@ -350,7 +339,6 @@ describe("useChatSession", () => {
       title: "Write to file?",
     };
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       .mockResolvedValueOnce(makeSseResponse([permissionEvent, { type: "done" }]))
       .mockResolvedValueOnce(new Response("{}", { status: 200 })); // permission POST
 

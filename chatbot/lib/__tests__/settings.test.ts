@@ -17,6 +17,7 @@ const { tmpFile, tmpAgentSettingsDir } = vi.hoisted(() => {
 
 // settings.ts imports ./paths which resolves to @@/lib/paths (project root)
 vi.mock("@@/lib/paths", () => ({
+  AGENT_LOCAL_DIR: tmpAgentSettingsDir,
   DOVEPAW_DIR: require("node:path").dirname(
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require("node:path").resolve(require("node:os").tmpdir(), `settings-test-dir`),

@@ -123,7 +123,6 @@ export async function deployAgentSdk(): Promise<void> {
   await writeFile(join(DOVEPAW_TMP_DIR, "package.json"), '{"type":"module"}\n', "utf-8");
 }
 
-
 /** Return the last N lines from the most recent log file for an agent. */
 export async function getAgentLogs(agent: AgentDef, lines = 100): Promise<string> {
   const logDir = agentPersistentLogDir(agent.name);

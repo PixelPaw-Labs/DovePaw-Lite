@@ -13,10 +13,7 @@ import { useTextAnimation } from "./use-text-animation";
 import { processActiveStreamEvent } from "./process-stream-event";
 import { readSseStream } from "./read-sse-stream";
 import { startPolling } from "./poll-session";
-import {
-  fetchSessionDetail,
-  type SessionStatus,
-} from "./session-api-client";
+import { fetchSessionDetail, type SessionStatus } from "./session-api-client";
 
 export type { SessionStatus };
 
@@ -562,7 +559,6 @@ export function useChatSession(agentId: AgentId) {
     setPendingQueue(rest);
     void sendMessage(next);
   }, [isLoading, sendMessage]);
-
 
   return {
     messages,

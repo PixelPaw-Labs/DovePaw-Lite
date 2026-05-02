@@ -153,7 +153,7 @@ export class QueryAgentExecutor {
         );
       }
 
-      const cwd = workspace!.path;
+      const cwd = workspace.path;
 
       const agentConfig = buildAgentConfig(
         this.def,
@@ -187,10 +187,7 @@ export class QueryAgentExecutor {
             agentConfigDir(this.def.name),
             agentSourceDir,
           ];
-          const dispatcher = new A2AQueryDispatcher(
-            publisher,
-            contextId,
-          );
+          const dispatcher = new A2AQueryDispatcher(publisher, contextId);
           const subagentSessionId = await consumeQueryEvents(
             query({
               prompt: instruction || startRunScriptToolName(this.def.manifestKey),

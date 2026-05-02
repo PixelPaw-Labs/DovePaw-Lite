@@ -29,11 +29,8 @@ vi.mock("@@/lib/paths", () => ({
   },
 }));
 
-const {
-  createAgentWorkspace,
-  cloneReposIntoWorkspace,
-  recloneReposIntoWorkspace,
-} = await import("../workspace");
+const { createAgentWorkspace, cloneReposIntoWorkspace, recloneReposIntoWorkspace } =
+  await import("../workspace");
 
 // ─── createAgentWorkspace ─────────────────────────────────────────────────────
 
@@ -45,7 +42,9 @@ describe("createAgentWorkspace", () => {
     const ws = createAgentWorkspace("my-agent", "ma");
 
     expect(existsSync(ws.path)).toBe(true);
-    expect(ws.path.startsWith(join(TMP_ROOT, ".dovepaw-lite", "workspaces", ".my-agent"))).toBe(true);
+    expect(ws.path.startsWith(join(TMP_ROOT, ".dovepaw-lite", "workspaces", ".my-agent"))).toBe(
+      true,
+    );
   });
 
   it("workspace folder name is {alias}-{shortId}", () => {
@@ -296,4 +295,3 @@ describe("recloneReposIntoWorkspace", () => {
     expect(ghClone).not.toHaveBeenCalled();
   });
 });
-

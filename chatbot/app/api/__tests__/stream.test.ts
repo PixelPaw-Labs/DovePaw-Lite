@@ -17,7 +17,7 @@ vi.mock("@/lib/session-events", () => ({
   subscribeSession: vi.fn(),
 }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@/lib/db-lite", () => ({
   getSessionStatus: vi.fn(),
   getSessionDetail: vi.fn(),
   setSessionStatus: vi.fn(),

@@ -11,11 +11,7 @@
 import { execSync } from "node:child_process";
 import { agents } from "./scheduler-config/configs.js";
 import { SCHEDULER_ROOT } from "./lib/paths.js";
-import {
-  copyNativePackages,
-  deployAgentSdk,
-  linkLocalAgentSkills,
-} from "./lib/installer.js";
+import { copyNativePackages, deployAgentSdk, linkLocalAgentSkills } from "./lib/installer.js";
 import { scheduler } from "./lib/scheduler.js";
 
 const NATIVE_PACKAGES = ["@ladybugdb/core"];

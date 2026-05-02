@@ -2,7 +2,6 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-
 function resolveAgentsRoot(): string {
   try {
     // Native ESM (Node.js / tsx): derive from this file's location.

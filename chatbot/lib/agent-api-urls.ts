@@ -6,7 +6,6 @@ const DOVE_ID = "dove";
  *  automatically widens if the schema ever narrows name to a literal union. */
 export type AgentId = typeof DOVE_ID | (AgentConfigEntry["name"] & {});
 
-
 export function sessionDetailUrl(_agentId: AgentId, id: string): string {
   return `/api/chat/session/${id}`;
 }
@@ -14,7 +13,6 @@ export function sessionDetailUrl(_agentId: AgentId, id: string): string {
 export function agentChatUrl(_agentId: AgentId): string {
   return "/api/chat";
 }
-
 
 export function sessionStreamUrl(sessionId: string): string {
   return `/api/chat/stream/${sessionId}`;

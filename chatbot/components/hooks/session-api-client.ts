@@ -7,7 +7,6 @@ import type { ChatMessage } from "./use-messages";
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
-
 export const sessionDetailResponseSchema = z.object({
   messages: z.array(sessionMessageSchema).default([]),
   progress: z

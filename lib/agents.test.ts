@@ -101,4 +101,3 @@ describe("buildAgentDef — derived fields", () => {
     expect(def.toolName).toBe("yolo_my_agent");
   });
 });
-

@@ -14,8 +14,8 @@ The agent is now visible in the **Kiln** sidebar group (Sparkles icon). Tmp agen
 
 ## Path Reference
 
-| Path                               | Purpose                                                              |
-| ---------------------------------- | -------------------------------------------------------------------- |
+| Path                                    | Purpose                                                              |
+| --------------------------------------- | -------------------------------------------------------------------- |
 | `~/.dovepaw-lite/tmp/<name>/main.ts`    | Agent entry point (tmp draft)                                        |
 | `~/.dovepaw-lite/tmp/<name>/agent.json` | Agent metadata (tmp draft) — `tmpAgentDefinitionFile(name)`          |
 | `~/.dovepaw-lite/agents/logs/.<name>/`  | Persistent log dir (`agentPersistentLogDir(name)`)                   |

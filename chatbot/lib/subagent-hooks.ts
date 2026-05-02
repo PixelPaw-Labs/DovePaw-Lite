@@ -42,13 +42,7 @@ export function buildSubAgentHooks(
   });
   return {
     ...base,
-    PreToolUse: [
-      ...(base.PreToolUse ?? []),
-      ...(notifHooks.PreToolUse ?? []),
-    ],
-    PostToolUse: [
-      ...(base.PostToolUse ?? []),
-      ...(notifHooks.PostToolUse ?? []),
-    ],
+    PreToolUse: [...(base.PreToolUse ?? []), ...(notifHooks.PreToolUse ?? [])],
+    PostToolUse: [...(base.PostToolUse ?? []), ...(notifHooks.PostToolUse ?? [])],
   };
 }

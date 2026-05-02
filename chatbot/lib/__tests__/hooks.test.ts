@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildAgentHooks, buildDoveCanUseTool, buildDoveHooks } from "../hooks";
-import {
-  buildSubAgentHooks,
-  SUBAGENT_PROMPT_REMINDER,
-} from "../subagent-hooks";
+import { buildSubAgentHooks, SUBAGENT_PROMPT_REMINDER } from "../subagent-hooks";
 import { PendingRegistry } from "../pending-registry";
 import { resolvePendingPermission } from "../pending-permissions";
 import { resolvePendingQuestion } from "../pending-questions";

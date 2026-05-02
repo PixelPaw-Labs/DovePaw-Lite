@@ -18,11 +18,11 @@ Agent Scripts  (from installed plugin repos, run as launchd daemons)
 
 Each agent exposes three MCP tools to the chatbot layer:
 
-| Tool pattern | Behaviour |
-|---|---|
-| `ask_*` | Blocking — waits for the agent to complete |
-| `start_*` | Fire-and-forget — returns a session ID immediately |
-| `await_*` | Poll — retrieves the result of a prior `start_*` call |
+| Tool pattern | Behaviour                                             |
+| ------------ | ----------------------------------------------------- |
+| `ask_*`      | Blocking — waits for the agent to complete            |
+| `start_*`    | Fire-and-forget — returns a session ID immediately    |
+| `await_*`    | Poll — retrieves the result of a prior `start_*` call |
 
 ## Plugin System
 
@@ -51,6 +51,7 @@ Plugin repo (e.g. owner/my-agents)
 **Environment isolation.** Agent processes run with a sanitised environment (clean PATH, `CLAUDECODE` unset) so nested Claude CLI invocations work correctly. Per-agent secrets are injected at daemon install time from settings.
 
 **User data directory.** All runtime state lives outside the repo under `~/.dovepaw-lite/`:
+
 - `plugins/` — installed plugin repos
 - `plugins.json` — plugin registry
 - `settings.json` — global settings (repositories, API keys)
@@ -60,18 +61,19 @@ Plugin repo (e.g. owner/my-agents)
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| UI | Next.js + React, Tailwind CSS + shadcn/ui |
-| Agent SDK | @anthropic-ai/claude-agent-sdk |
-| Agent protocol | @a2a-js/sdk (SSE) |
-| Agent runtime | TypeScript via tsx, bundled with tsup |
-| Daemon management | macOS launchd |
-| Schema validation | Zod |
-| Linting / formatting | oxlint + oxfmt |
-| Testing | Vitest |
+| Layer                | Technology                                |
+| -------------------- | ----------------------------------------- |
+| UI                   | Next.js + React, Tailwind CSS + shadcn/ui |
+| Agent SDK            | @anthropic-ai/claude-agent-sdk            |
+| Agent protocol       | @a2a-js/sdk (SSE)                         |
+| Agent runtime        | TypeScript via tsx, bundled with tsup     |
+| Daemon management    | macOS launchd                             |
+| Schema validation    | Zod                                       |
+| Linting / formatting | oxlint + oxfmt                            |
+| Testing              | Vitest                                    |
 
 <!-- gitnexus:start -->
+
 # GitNexus — Code Intelligence
 
 This project is indexed by GitNexus as **DovePaw** (4305 symbols, 8384 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
@@ -95,22 +97,22 @@ This project is indexed by GitNexus as **DovePaw** (4305 symbols, 8384 relations
 
 ## Resources
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/DovePaw/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/DovePaw/clusters` | All functional areas |
-| `gitnexus://repo/DovePaw/processes` | All execution flows |
-| `gitnexus://repo/DovePaw/process/{name}` | Step-by-step execution trace |
+| Resource                                 | Use for                                  |
+| ---------------------------------------- | ---------------------------------------- |
+| `gitnexus://repo/DovePaw/context`        | Codebase overview, check index freshness |
+| `gitnexus://repo/DovePaw/clusters`       | All functional areas                     |
+| `gitnexus://repo/DovePaw/processes`      | All execution flows                      |
+| `gitnexus://repo/DovePaw/process/{name}` | Step-by-step execution trace             |
 
 ## CLI
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Task                                         | Read this skill file                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
+| Blast radius / "What breaks if I change X?"  | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?"             | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
+| Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
+| Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
+| Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
 
 <!-- gitnexus:end -->

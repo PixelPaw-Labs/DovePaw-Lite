@@ -14,6 +14,7 @@ const { tmpDir } = vi.hoisted(() => {
 });
 
 vi.mock("@@/lib/paths", () => ({
+  AGENT_LOCAL_DIR: tmpDir,
   AGENT_SETTINGS_DIR: tmpDir,
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   agentConfigDir: (n: string) => require("node:path").join(tmpDir, n),
@@ -73,20 +74,6 @@ function agentDir(name: string) {
 
 function agentFile(name: string) {
   return join(tmpDir, name, "agent.json");
-}
-
-function tmpAgentDir(name: string) {
-  return join(tmpDir, "__tmp__", name);
-}
-
-function writeTmpAgentFile(entry: AgentConfigEntry) {
-  const dir = tmpAgentDir(entry.name);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, "agent.json"),
-    JSON.stringify({ ...entry, version: 1, repos: [], envVars: [] }, null, 2) + "\n",
-    "utf-8",
-  );
 }
 
 function cleanup() {
@@ -169,16 +156,6 @@ describe("createAgentFile", () => {
 describe("patchAgentFile — tmp agent write-back", () => {
   beforeEach(cleanup);
   afterEach(cleanup);
-
-  it("writes back to tmp/ when the agent lives in tmp/", async () => {
-    writeTmpAgentFile(FIXTURE_AGENT);
-    await patchAgentFile("memory-dream", { displayName: "Memory Dream Updated" });
-    // Permanent settings dir must NOT have been created
-    expect(existsSync(agentFile("memory-dream"))).toBe(false);
-    // The tmp file must reflect the patch
-    const updated = await readAgentFile("memory-dream");
-    expect(updated?.displayName).toBe("Memory Dream Updated");
-  });
 
   it("writes to settings.agents/ for permanent agents", async () => {
     await createAgentFile(FIXTURE_AGENT);
@@ -264,7 +241,7 @@ describe("deleteAgentDefinition", () => {
 describe("buildAgentDef", () => {
   it("derives entryPath from name", () => {
     const def = buildAgentDef(FIXTURE_AGENT);
-    expect(def.entryPath).toBe("agents/memory-dream/main.ts");
+    expect(def.entryPath).toBe("agent-local/memory-dream/main.ts");
   });
 
   it("derives manifestKey by replacing dashes with underscores", () => {
@@ -333,16 +310,6 @@ describe("readAgentsConfig", () => {
       expect(def.icon).toBeTruthy();
     }
   });
-
-  it("includes tmp/Kiln agents alongside installed agents", async () => {
-    await createAgentFile(FIXTURE_AGENT);
-    writeTmpAgentFile(FIXTURE_AGENT_2);
-    const defs = await readAgentsConfig();
-    expect(defs).toHaveLength(2);
-    const names = defs.map((d) => d.name);
-    expect(names).toContain(FIXTURE_AGENT.name);
-    expect(names).toContain(FIXTURE_AGENT_2.name);
-  });
 });
 
 describe("agentConfigEntrySchema validation", () => {
@@ -386,4 +353,3 @@ describe("agentConfigEntrySchema validation", () => {
     expect(result.success).toBe(false);
   });
 });
-

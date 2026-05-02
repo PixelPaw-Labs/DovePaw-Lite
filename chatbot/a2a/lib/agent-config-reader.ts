@@ -23,5 +23,4 @@ export class AgentConfigReader {
       .map((r) => r.githubRepo);
     return { extraEnv, repoSlugs };
   }
-
 }

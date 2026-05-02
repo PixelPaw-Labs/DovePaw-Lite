@@ -13,7 +13,6 @@ import { useConversationContext } from "@/components/hooks/use-conversation-cont
 import { useButtonShimmer } from "@/components/hooks/use-button-shimmer";
 import { useDoveSettings } from "@/components/hooks/use-dove-settings";
 import type { DoveSettings } from "@@/lib/settings-schemas";
-import type { AgentStatus } from "@/a2a/heartbeat-types";
 import { AgentButton } from "./agent-button";
 
 interface AgentSidebarProps {
@@ -21,10 +20,7 @@ interface AgentSidebarProps {
   initialDoveSettings?: DoveSettings;
 }
 
-export function AgentSidebar({
-  agentConfigs,
-  initialDoveSettings,
-}: AgentSidebarProps) {
+export function AgentSidebar({ agentConfigs, initialDoveSettings }: AgentSidebarProps) {
   const { doveIsRunning } = useConversationContext();
   const statuses = useAgentHeartbeat();
   const pathname = usePathname();
@@ -199,4 +195,3 @@ export function AgentSidebar({
     </aside>
   );
 }
-
