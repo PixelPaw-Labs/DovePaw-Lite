@@ -99,6 +99,10 @@ Open the URL printed by Next.js. Dove appears in the sidebar. The `hello-world` 
 
 ## Adding an Agent
 
+> **Quickstart:** In Claude Code, run `/sub-agent-builder` to scaffold a new agent interactively — it handles file creation, registration, and skill setup end-to-end.
+
+To add an agent manually:
+
 1. Create a directory under `agent-local/`:
 
 ```
