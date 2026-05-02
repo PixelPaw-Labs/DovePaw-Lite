@@ -31,20 +31,6 @@ export interface UpsertSessionArgs {
   senderAgentId?: string;
 }
 
-export interface SessionResumable {
-  subagentSessionId: string;
-  workspacePath: string;
-  startedAt: string;
-  label: string;
-}
-
-export interface GroupMessage {
-  id: string;
-  agentId: string;
-  startedAt: string;
-  groupMessage: string;
-}
-
 // ─── In-memory store ─────────────────────────────────────────────────────────
 
 interface StoredSession {
@@ -107,22 +93,10 @@ export function setSessionStatus(id: string, status: SessionStatus): void {
 
 export function closeStaleSessions(): void {}
 
-export function getSessionResumable(_id: string, _agentId: string): SessionResumable | null {
-  return null;
-}
-
 export function getSessionDetail(id: string): SessionDetail | null {
   const s = sessions.get(id);
   if (!s) return null;
   return { ...s };
-}
-
-export function getSessionWorkspacePath(_id: string): string | null {
-  return null;
-}
-
-export function getAllSessionWorkspacePaths(): string[] {
-  return [];
 }
 
 export function deleteSession(id: string): void {
@@ -131,12 +105,6 @@ export function deleteSession(id: string): void {
 
 export function deleteAllSessions(): void {
   sessions.clear();
-}
-
-export function setGroupMessage(_sessionId: string, _text: string): void {}
-
-export function getGroupMessages(_agentIds: string[]): GroupMessage[] {
-  return [];
 }
 
 export function setOrchestratorAgentContext(
