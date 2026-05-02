@@ -4,6 +4,31 @@ An agent orchestration runtime. One Dove chatbot, one A2A server layer, your age
 
 ---
 
+## Claude Code Agent SDK
+
+Dove is built on the [`@anthropic-ai/claude-agent-sdk`](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk) — the same runtime that powers Claude Code itself.
+
+The SDK's `query()` function runs Dove as a stateful agent loop. It handles the Claude API calls, tool dispatch, and — critically — **conversation memory**. There is no database for chat history in this project. Conversation continuity is entirely managed by the SDK: each turn passes `resume: sessionId` to `query()`, which replays the session from the SDK's own storage under `~/.claude/projects/`. The in-memory store (`db-lite.ts`) only tracks lightweight UI metadata (session status, progress labels) — not message content.
+
+```typescript
+// chatbot/app/api/chat/route.ts — simplified
+query({
+  prompt: message,
+  options: {
+    // Resume picks up the full conversation history from ~/.claude/projects/
+    ...(sessionId ? { resume: sessionId } : {}),
+    mcpServers: { agents: mcpServer },  // inject ask_*/start_*/await_* tools
+    systemPrompt: { type: "preset", preset: "claude_code", append: buildSystemPrompt() },
+  },
+});
+```
+
+The SDK also provides the `tool()` factory used to define each agent's MCP tools, and the `hooks` / `canUseTool` callbacks used to gate permissions and stream progress to the browser.
+
+**What this means in practice:** conversation history survives process restarts (it lives in `~/.claude/`), but is tied to the machine. For server deployments where the container is ephemeral, each restart begins a fresh conversation. If you need persistent cross-restart history, add a session export step before container shutdown.
+
+---
+
 ## Architecture
 
 ```
@@ -30,7 +55,7 @@ Agent Scripts — TypeScript files in agent-local/<name>/main.ts
 
 | Decision | Reason |
 |---|---|
-| In-memory session store | No SQLite dependency — sessions live only for the process lifetime |
+| In-memory session store | Conversation memory lives in the Claude Code SDK (`~/.claude/`), not a DB — the store only tracks UI metadata |
 | `agent-local/` scanned at startup | Agent discovery is a directory scan — add a folder, restart, it appears |
 | OS-assigned A2A ports | No port conflicts, no config to maintain |
 | Platform-neutral scheduler abstraction | `lib/scheduler.ts` adapts to launchd (macOS) or cron (Linux) |
