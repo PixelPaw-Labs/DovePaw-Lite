@@ -78,7 +78,7 @@ vi.mock("@/lib/paths", () => ({
   AGENT_SETTINGS_DIR: "/mock/agent-settings",
 }));
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@/lib/db-lite", () => ({
   closeStaleSessions: vi.fn(),
   setSessionStatus: vi.fn(),
   deleteSession: vi.fn(),

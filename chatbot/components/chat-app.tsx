@@ -12,32 +12,22 @@ interface ChatAppProps {
   initialDoveSettings?: DoveSettings;
 }
 
-export function ChatApp({
-  agentConfigs,
-  initialDoveSettings,
-}: ChatAppProps) {
+export function ChatApp({ agentConfigs, initialDoveSettings }: ChatAppProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [doveIsRunning, setDoveIsRunning] = React.useState(false);
   const newSessionRef = React.useRef<(() => void) | null>(null);
 
   return (
-    <ConversationProvider
-      isLoading={isLoading}
-      activeAgentId="dove"
-      doveIsRunning={doveIsRunning}
-    >
+    <ConversationProvider isLoading={isLoading} activeAgentId="dove" doveIsRunning={doveIsRunning}>
       <div className="flex h-screen bg-background overflow-hidden">
-        <AgentSidebar
-          agentConfigs={agentConfigs}
-          initialDoveSettings={initialDoveSettings}
-        />
+        <AgentSidebar agentConfigs={agentConfigs} initialDoveSettings={initialDoveSettings} />
         <AgentChat
           key="dove"
           agentId="dove"
           agentConfigs={agentConfigs}
           onIsLoadingChange={(loading) => {
             setIsLoading(loading);
-            if (activeAgentId === "dove") setDoveIsRunning(loading);
+            setDoveIsRunning(loading);
           }}
           onNewSession={(fn) => {
             newSessionRef.current = fn;

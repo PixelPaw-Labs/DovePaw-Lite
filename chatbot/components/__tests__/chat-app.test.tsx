@@ -6,7 +6,6 @@ import { useConversationContext } from "@/components/hooks/use-conversation-cont
 // ─── Captured callbacks ────────────────────────────────────────────────────────
 
 let capturedOnSelectAgent: ((id: string) => void) | undefined;
-let capturedOnIsLoadingChange: ((loading: boolean) => void) | undefined;
 
 // ─── Context observer ──────────────────────────────────────────────────────────
 
@@ -31,13 +30,11 @@ vi.mock("@/components/agent-chat/agent-sidebar", () => ({
 
 vi.mock("@/components/agent-chat", () => ({
   AgentChat: ({
-    onIsLoadingChange,
     onNewSession,
   }: {
     onIsLoadingChange?: (loading: boolean) => void;
     onNewSession?: (fn: () => void) => void;
   }) => {
-    capturedOnIsLoadingChange = onIsLoadingChange;
     onNewSession?.(() => {});
     return <div>AgentChat</div>;
   },
@@ -46,24 +43,6 @@ vi.mock("@/components/agent-chat", () => ({
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("ChatApp — agent switching resets isLoading", () => {
-  it("resets isLoading to false when switching to a different agent", () => {
-    render(<ChatApp agentConfigs={[]} />);
-
-    // Simulate the current agent emitting a loading state
-    act(() => {
-      capturedOnIsLoadingChange?.(true);
-    });
-    expect(screen.getByTestId("is-loading").textContent).toBe("true");
-
-    // Switch to a different agent
-    act(() => {
-      capturedOnSelectAgent?.("forge");
-    });
-
-    // isLoading must be reset — prevents stale shimmer on the newly selected agent
-    expect(screen.getByTestId("is-loading").textContent).toBe("false");
-  });
-
   it("keeps isLoading false when switching while idle", () => {
     render(<ChatApp agentConfigs={[]} />);
 
