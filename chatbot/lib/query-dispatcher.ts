@@ -378,24 +378,15 @@ export class SseQueryDispatcher implements QueryResponseDispatcher {
 export class A2AQueryDispatcher implements QueryResponseDispatcher {
   private readonly accumulator = new MessageAccumulator();
 
-  private groupStreamText = "";
-  // Set when a handoff tool (chat_to_*, review_with_*, escalate_to_*) is attempted.
-  // Any text after that point is either handoff narration or declined-handoff reasoning —
-  // neither belongs in the group pool stream.
-  private handoffAttempted = false;
-
   /**
    * @param publisher   A2A event bus publisher (required)
    * @param sessionId   DB context ID for this session. When provided, events are relayed
    *                    to the Next.js chatbot so `/api/chat/stream/[sessionId]` can serve
    *                    the subagent's live stream.
-   * @param groupRelay  When set, each text delta is also accumulated and relayed as a
-   *                    `group_member` pool event to the group context stream.
    */
   constructor(
     private readonly publisher: ExecutorPublisher,
     private readonly sessionId?: string,
-    private readonly groupRelay?: { groupContextId: string; agentName: string },
   ) {}
 
   /** Relay an event to the Next.js session event bus via HTTP (no-op when sessionId absent). */
@@ -428,26 +419,12 @@ export class A2AQueryDispatcher implements QueryResponseDispatcher {
     this.publisher.send(text, ARTIFACT.STREAM);
     this.accumulator.onTextDelta(text);
     this.emit({ type: "text", content: text });
-    if (this.groupRelay && !this.handoffAttempted) {
-      this.groupStreamText += text;
-      this.emit(
-        {
-          type: "group_member",
-          agentId: this.groupRelay.agentName,
-          text: this.groupStreamText,
-          done: false,
-        },
-        this.groupRelay.groupContextId,
-      );
-    }
   }
 
   onThinking(text: string): void {
     this.publisher.send(text, ARTIFACT.THINKING);
     this.accumulator.onThinking(text);
-    // Skip relaying thinking to session stream in group mode — it is noise that
-    // the group UI does not render, and saves unnecessary relay calls.
-    if (!this.groupRelay) this.emit({ type: "thinking", content: text });
+    this.emit({ type: "thinking", content: text });
   }
 
   onToolCall(name: string, toolUseId?: string): void {
@@ -460,10 +437,6 @@ export class A2AQueryDispatcher implements QueryResponseDispatcher {
     // because onTaskProgress is never called for background inner-agent tool calls.
     this.publisher.publishStatusToUI(key, { [ARTIFACT.TOOL_CALL]: name, label: name });
     const entry = this.accumulator.onToolCall(name, toolUseId);
-    if (this.groupRelay) {
-      // Discard text before this tool call — only post-tool text reaches the pool.
-      this.groupStreamText = "";
-    }
     this.emit({ type: "tool_call", name });
     this.emit({ type: "progress", result: { output: "", progress: [entry] } });
   }
@@ -478,20 +451,6 @@ export class A2AQueryDispatcher implements QueryResponseDispatcher {
     if (result) this.publisher.send(result, ARTIFACT.FINAL_OUTPUT);
     if (result) this.emit({ type: "result", content: result });
     this.accumulator.onFinalOutput();
-    // Close the group bubble so subsequent responses create a new bubble.
-    // For Dove-orchestrated members the drain also sends done:true — that's fine,
-    // a second close is a no-op on the frontend.
-    if (this.groupRelay) {
-      this.emit(
-        {
-          type: "group_member",
-          agentId: this.groupRelay.agentName,
-          text: result,
-          done: true,
-        },
-        this.groupRelay.groupContextId,
-      );
-    }
   }
 
   onArtifact(_name: string, _text: string): void {}
