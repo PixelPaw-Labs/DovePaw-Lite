@@ -197,3 +197,12 @@ Set `S3_CONFIG_BUCKET` to enable S3 write-through for all JSON config writes. On
 aws s3 sync s3://$S3_CONFIG_BUCKET/ ${DOVEPAW_DATA_DIR:-~/.dovepaw}/
 npm run dev
 ```
+
+**ECS env vars:**
+
+| Env var | Required | Description |
+|---|---|---|
+| `S3_CONFIG_BUCKET` | Optional | S3 bucket name — activates write-through; unset = local mode only |
+| `DOVEPAW_DATA_DIR` | Optional | Override data dir (default: `~/.dovepaw/`) |
+| `AWS_REGION` | When S3 used | AWS region for the S3 client |
+| `ANTHROPIC_API_KEY` | Required | Claude API key (or use Claude Code CLI auth) |
