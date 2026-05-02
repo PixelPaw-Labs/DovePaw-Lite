@@ -23,8 +23,6 @@ export const CHATBOT_PUBLIC_DIR = join(AGENTS_ROOT, "chatbot", "public");
 export const DOVEPAW_DIR = process.env.DOVEPAW_DATA_DIR ?? join(process.env.HOME!, ".dovepaw-lite");
 /** ~/.dovepaw-lite/settings.json — global settings (watched repositories, etc.) */
 export const SETTINGS_FILE = join(DOVEPAW_DIR, "settings.json");
-/** ~/.dovepaw-lite/agent-links.json — global agent communication link topology */
-export const AGENT_LINKS_FILE = join(DOVEPAW_DIR, "agent-links.json");
 /** ~/.dovepaw-lite/settings.agents/ — per-agent settings directory */
 export const AGENT_SETTINGS_DIR = join(DOVEPAW_DIR, "settings.agents");
 /** ~/.dovepaw-lite/workspaces/ — isolated execution workspace roots for all agents */
@@ -87,16 +85,11 @@ export const portsFile = (port: string | number): string =>
 export const A2A_SERVERS_PID_FILE = join(DOVEPAW_DIR, ".a2a-servers.pid");
 /** ~/.dovepaw-lite/tmp/ — dynamically created session agent configs (written by Dove at runtime) */
 export const DOVEPAW_TMP_DIR = join(DOVEPAW_DIR, "tmp");
-/** ~/.dovepaw-lite/tmp/<agentName>/agent.json — session agent definition */
-export const tmpAgentDefinitionFile = (agentName: string) =>
-  join(DOVEPAW_TMP_DIR, agentName, "agent.json");
 /** DovePaw/.claude/hooks/karpathy-guidelines.sh — UserPromptSubmit hook injected into agent workspaces */
 export const KARPATHY_HOOK_SRC = join(AGENTS_ROOT, ".claude/hooks/karpathy-guidelines.sh");
 
 // ─── Scheduler paths (cross-platform) ────────────────────────────────────────
 
-/** ~/.dovepaw-lite/plugins — installed plugin directories */
-export const PLUGINS_DIR = join(DOVEPAW_DIR, "plugins");
 /** ~/.dovepaw-lite/sdk — deployed @dovepaw/agent-sdk package */
 export const AGENT_SDK_DIR = join(DOVEPAW_DIR, "sdk");
 /** DovePaw/packages/agent-sdk — SDK source in the monorepo */

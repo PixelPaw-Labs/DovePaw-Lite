@@ -14,7 +14,6 @@ import { SCHEDULER_ROOT } from "./lib/paths.js";
 import {
   copyNativePackages,
   deployAgentSdk,
-  linkAgents,
   linkLocalAgentSkills,
 } from "./lib/installer.js";
 import { scheduler } from "./lib/scheduler.js";
@@ -40,8 +39,7 @@ execSync("npx tsup", { stdio: "inherit", cwd: import.meta.dirname });
 
 // ─── Install + load ──────────────────────────────────────────────────────────
 
-console.log("\nStep 2: Linking agents, skills, and deploying SDK...\n");
-await linkAgents();
+console.log("\nStep 2: Linking skills and deploying SDK...\n");
 await deployAgentSdk();
 await linkLocalAgentSkills();
 console.log(`  SDK deployed to ~/.dovepaw-lite/sdk`);

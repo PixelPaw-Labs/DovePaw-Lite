@@ -33,7 +33,6 @@ import {
   AGENTS_ROOT,
   CODEX_SKILLS_ROOT,
   DOVEPAW_TMP_DIR,
-  PLUGINS_DIR,
   SCHEDULER_ROOT,
   SKILLS_ROOT,
   agentDistScript,
@@ -124,43 +123,6 @@ export async function deployAgentSdk(): Promise<void> {
   await writeFile(join(DOVEPAW_TMP_DIR, "package.json"), '{"type":"module"}\n', "utf-8");
 }
 
-/**
- * Create <pluginDir>/node_modules/@dovepaw/agent-sdk → ~/.dovepaw-lite/sdk symlink
- * so plugin agents resolve @dovepaw/agent-sdk at both tsx runtime and tsup bundle time.
- */
-export async function linkAgentSdkToPlugin(pluginDir: string): Promise<void> {
-  const nmScope = join(pluginDir, "node_modules", "@dovepaw");
-  await mkdir(nmScope, { recursive: true });
-  const link = join(nmScope, "agent-sdk");
-  await rm(link, { recursive: true, force: true });
-  await symlink(AGENT_SDK_DIR, link);
-}
-
-/** Ensure DovePaw/agents -> ~/.dovepaw-lite/plugins symlink exists. */
-export async function linkAgents(): Promise<void> {
-  await mkdir(PLUGINS_DIR, { recursive: true });
-  const link = join(AGENTS_ROOT, "agents");
-  try {
-    await symlink(PLUGINS_DIR, link);
-  } catch (e: unknown) {
-    if (e instanceof Error && (e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
-  }
-}
-
-/** Symlink a plugin's skills into ~/.claude/skills/ and ~/.codex/skills/. */
-export async function linkPluginSkills(pluginDir: string, skillNames: string[]): Promise<void> {
-  if (skillNames.length === 0) return;
-  await Promise.all(
-    [SKILLS_ROOT, CODEX_SKILLS_ROOT].flatMap((root) =>
-      skillNames.map(async (skill) => {
-        await mkdir(root, { recursive: true });
-        const link = join(root, skill);
-        await rm(link, { recursive: true, force: true });
-        await symlink(join(pluginDir, "skills", skill), link);
-      }),
-    ),
-  );
-}
 
 /** Return the last N lines from the most recent log file for an agent. */
 export async function getAgentLogs(agent: AgentDef, lines = 100): Promise<string> {
@@ -181,15 +143,6 @@ export async function getAgentLogs(agent: AgentDef, lines = 100): Promise<string
   const content = await readFile(join(logDir, logFiles[0].name), "utf-8");
   const all = content.split("\n");
   return `${logFiles[0].name} (last ${lines} lines):\n\n${all.slice(-lines).join("\n")}`;
-}
-
-/** Remove ~/.claude/skills/ and ~/.codex/skills/ symlinks for a plugin's skills. */
-export async function unlinkPluginSkills(skillNames: string[]): Promise<void> {
-  await Promise.all(
-    [SKILLS_ROOT, CODEX_SKILLS_ROOT].flatMap((root) =>
-      skillNames.map((skill) => rm(join(root, skill), { recursive: true, force: true })),
-    ),
-  );
 }
 
 /** Symlink skills from agent-local/<name>/skill/ into ~/.claude/skills/ and ~/.codex/skills/. */
