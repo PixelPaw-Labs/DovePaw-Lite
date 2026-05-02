@@ -1,8 +1,8 @@
 import { execFile } from "node:child_process";
-import { rmdirSync, rmSync, existsSync, writeFileSync, readFileSync, mkdirSync } from "node:fs";
+import { rmdirSync, rmSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { KARPATHY_HOOK_SRC, agentWorkspacePath } from "@@/lib/paths";
+import { agentWorkspacePath } from "@@/lib/paths";
 
 export interface AgentWorkspace {
   /** Absolute path to the UUID workspace directory. */
@@ -171,17 +171,6 @@ function writeWorkspacePermissions(clonePath: string): void {
   const settings = {
     permissions: { allow: ["Write(/**)", "Edit(/**)", "Bash(*)"] },
     hooks: {
-      UserPromptSubmit: [
-        {
-          hooks: [
-            {
-              type: "command",
-              command: `echo ${Buffer.from(readFileSync(KARPATHY_HOOK_SRC, "utf8")).toString("base64")} | base64 -d | bash`,
-              timeout: 10,
-            },
-          ],
-        },
-      ],
       PermissionRequest: [
         {
           matcher: "Edit|Write",
