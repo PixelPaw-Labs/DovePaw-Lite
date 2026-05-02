@@ -7,12 +7,12 @@ const DOVE_ID = "dove";
 export type AgentId = typeof DOVE_ID | (AgentConfigEntry["name"] & {});
 
 
-export function sessionDetailUrl(agentId: AgentId, id: string): string {
-  return agentId === DOVE_ID ? `/api/chat/session/${id}` : `/api/agent/${agentId}/session/${id}`;
+export function sessionDetailUrl(_agentId: AgentId, id: string): string {
+  return `/api/chat/session/${id}`;
 }
 
-export function agentChatUrl(agentId: AgentId): string {
-  return agentId === DOVE_ID ? "/api/chat" : `/api/agent/${agentId}/chat`;
+export function agentChatUrl(_agentId: AgentId): string {
+  return "/api/chat";
 }
 
 
