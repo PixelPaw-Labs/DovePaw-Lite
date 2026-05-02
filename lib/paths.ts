@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 function resolveAgentsRoot(): string {
   try {
-    // Native ESM (Node.js / tsx / Electron tsup bundle): derive from this file's location.
+    // Native ESM (Node.js / tsx): derive from this file's location.
     // lib/paths.ts → lib/ → DovePaw/
     return join(dirname(fileURLToPath(import.meta.url)), "..");
   } catch {
@@ -71,7 +71,7 @@ export const SKILLS_ROOT = join(process.env.HOME!, ".claude/skills");
 export const CODEX_SKILLS_ROOT = join(process.env.HOME!, ".codex/skills");
 /** Resolve an agent's entry point to an absolute path under agents/ root */
 export const agentEntryPath = (entryPath: string) => join(AGENTS_ROOT, entryPath);
-/** DovePaw/agent-local/ — locally developed agents (auto-linked on install/electron:dev) */
+/** DovePaw/agent-local/ — locally developed agents */
 export const AGENT_LOCAL_DIR = join(AGENTS_ROOT, "agent-local");
 /** DovePaw/node_modules/<pkg> */
 export const agentNodeModule = (pkg: string) => join(AGENTS_ROOT, "node_modules", pkg);

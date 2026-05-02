@@ -2,12 +2,10 @@
  * Shared A2A server lifecycle helpers.
  *
  * Canonical usage of `npm run chatbot:servers` lives here so that every
- * caller — Electron menubar, Next.js API route, CLI — uses the same command.
+ * caller — Next.js API route, CLI — uses the same command.
  *
  * Importers:
  *   chatbot/app/api/servers/restart/route.ts   via  @@/lib/server-manager
- *   electron/main.ts                            via  ../lib/server-manager
- *     (Electron bundles with tsup so the relative import resolves correctly)
  */
 
 import { type ChildProcess, spawn } from "node:child_process";
@@ -32,12 +30,11 @@ export function killServers(): void {
 /**
  * Spawn a fresh A2A servers process via `npm run chatbot:servers`.
  *
- * Returns the raw ChildProcess so the caller can:
- *   - Electron: pipe stdout/stderr to a log file and watch for exit to auto-restart
- *   - API route: call unref() to detach and write child.pid to the PID file
+ * Returns the raw ChildProcess so the caller can call unref() to detach
+ * and write child.pid to the PID file.
  *
  * @param port  Value forwarded as DOVEPAW_PORT env var (default 7473)
- * @param stdio "pipe" for Electron (log piping), "ignore" for detached API restarts
+ * @param stdio "pipe" for log piping, "ignore" for detached API restarts
  */
 export function createServersProcess(
   port: number = 7473,
