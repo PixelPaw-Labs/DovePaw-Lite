@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Bot, PawPrint, Settings } from "lucide-react";
 import { LUCIDE_ICON_REGISTRY } from "@@/lib/icon-registry";
 import { buildAgentDef } from "@@/lib/agents";
@@ -18,21 +18,16 @@ import { AgentButton } from "./agent-button";
 
 interface AgentSidebarProps {
   agentConfigs: AgentConfigEntry[];
-  activeAgentId?: string;
   initialDoveSettings?: DoveSettings;
-  onSelectAgent?: (agentId: string) => void;
 }
 
 export function AgentSidebar({
   agentConfigs,
-  activeAgentId = "dove",
   initialDoveSettings,
-  onSelectAgent,
 }: AgentSidebarProps) {
   const { doveIsRunning } = useConversationContext();
   const statuses = useAgentHeartbeat();
   const pathname = usePathname();
-  const router = useRouter();
   const isSettings = pathname === "/settings";
 
   const hasData = Object.keys(statuses).length > 0;
@@ -44,7 +39,7 @@ export function AgentSidebar({
 
   const isDoveLoading = doveIsRunning;
   const doveShimmerRef = useButtonShimmer(isDoveLoading);
-  const isDoveSelected = (activeAgentId === "dove" && !isSettings) || isDoveLoading;
+  const isDoveSelected = !isSettings || isDoveLoading;
 
   const MIN_WIDTH = 180;
   const MAX_WIDTH = 480;
@@ -104,8 +99,7 @@ export function AgentSidebar({
       {/* Agent nav — scrolls independently; settings links stay pinned below */}
       <nav className="flex flex-col gap-1 flex-1 overflow-y-auto overflow-x-hidden misty-scroll">
         {/* Dove — the orchestrator (always first, outside all groups) */}
-        <button
-          onClick={() => onSelectAgent?.("dove")}
+        <div
           className={cn(
             "relative overflow-hidden shrink-0 my-0.5 px-4 py-2.5 flex items-center gap-3 text-left transition-all w-full",
             isDoveSelected
@@ -142,7 +136,7 @@ export function AgentSidebar({
             </span>
           </div>
           <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", "bg-green-500 animate-pulse")} />
-        </button>
+        </div>
 
         {agentConfigs.map((config) => {
           const agent = buildAgentDef(config);
@@ -153,10 +147,9 @@ export function AgentSidebar({
             <AgentButton
               key={agent.manifestKey}
               agent={agent}
-              isActive={!isSettings && !isAgentSettings && activeAgentId === agent.name}
+              isActive={false}
               status={statuses[agent.manifestKey]}
               hasData={hasData}
-              onClick={() => onSelectAgent?.(agent.name)}
               settingsHref={`/settings/agents/${agent.name}`}
               isAgentSettings={isAgentSettings}
             />

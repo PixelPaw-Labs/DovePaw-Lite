@@ -16,32 +16,24 @@ export function ChatApp({
   agentConfigs,
   initialDoveSettings,
 }: ChatAppProps) {
-  const [activeAgentId, setActiveAgentId] = React.useState("dove");
   const [isLoading, setIsLoading] = React.useState(false);
   const [doveIsRunning, setDoveIsRunning] = React.useState(false);
   const newSessionRef = React.useRef<(() => void) | null>(null);
 
-  const handleSelectAgent = React.useCallback((agentId: string) => {
-    setActiveAgentId(agentId);
-    setIsLoading(false);
-  }, []);
-
   return (
     <ConversationProvider
       isLoading={isLoading}
-      activeAgentId={activeAgentId}
+      activeAgentId="dove"
       doveIsRunning={doveIsRunning}
     >
       <div className="flex h-screen bg-background overflow-hidden">
         <AgentSidebar
           agentConfigs={agentConfigs}
           initialDoveSettings={initialDoveSettings}
-          onSelectAgent={handleSelectAgent}
-          activeAgentId={activeAgentId}
         />
         <AgentChat
-          key={activeAgentId}
-          agentId={activeAgentId}
+          key="dove"
+          agentId="dove"
           agentConfigs={agentConfigs}
           onIsLoadingChange={(loading) => {
             setIsLoading(loading);

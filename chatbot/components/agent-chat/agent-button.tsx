@@ -114,7 +114,7 @@ export function AgentButton({
   isActive: boolean;
   status: AgentStatus | undefined;
   hasData: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   settingsHref?: string;
   isAgentSettings?: boolean;
   onDelete?: () => void;
