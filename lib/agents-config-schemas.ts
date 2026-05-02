@@ -129,9 +129,7 @@ export const agentConfigEntrySchema = z.object({
   doveCard: agentSuggestionConfigSchema,
   /** Starter suggestion cards shown on the agent's empty chat screen */
   suggestions: z.array(agentSuggestionConfigSchema),
-  /** Absolute path to the plugin repo root. Absent = agent lives in DovePaw/agents/. */
-  pluginPath: z.string().optional(),
-  /** Personality paragraph injected at the top of the sub-agent system prompt.
+/** Personality paragraph injected at the top of the sub-agent system prompt.
    *  Replaces the generic "You are one of Dove's mice…" line. Keep it 1–3 sentences. */
   personality: z.string().optional(),
   /** Multiple scheduled jobs — each gets its own scheduler config entry. Replaces top-level schedule/runAtLoad. */

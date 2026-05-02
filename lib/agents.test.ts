@@ -102,17 +102,3 @@ describe("buildAgentDef — derived fields", () => {
   });
 });
 
-describe("buildAgentDef — pluginPath", () => {
-  it("propagates pluginPath when set", () => {
-    const def = buildAgentDef({
-      ...BASE_ENTRY,
-      pluginPath: "/home/user/.dovepaw-lite/plugins/my-plugin",
-    });
-    expect(def.pluginPath).toBe("/home/user/.dovepaw-lite/plugins/my-plugin");
-  });
-
-  it("leaves pluginPath undefined when absent", () => {
-    const def = buildAgentDef(BASE_ENTRY);
-    expect(def.pluginPath).toBeUndefined();
-  });
-});

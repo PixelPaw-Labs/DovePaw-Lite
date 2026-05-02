@@ -41,7 +41,7 @@ export async function installAgent(
 ): Promise<{ loaded: boolean; skipped?: boolean }> {
   if (agent.schedulingEnabled === false) return { loaded: false, skipped: true };
 
-  const entryFile = agent.pluginPath ? join(agent.pluginPath, agent.entryPath) : agent.entryPath;
+  const entryFile = agent.entryPath;
   await execAsync(`npx tsup --entry.${agent.name}=${entryFile} --metafile`, {
     cwd: AGENTS_ROOT,
   });

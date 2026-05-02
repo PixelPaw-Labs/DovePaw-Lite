@@ -89,9 +89,7 @@ export async function readAgentsConfig(): Promise<AgentDef[]> {
 export async function writeAgentFile(agentName: string, file: AgentFile): Promise<void> {
   const dest = agentDefinitionFile(agentName);
   await mkdir(dirname(dest), { recursive: true });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { pluginPath: _p, ...rest } = file;
-  const data = JSON.stringify(rest, null, 2) + "\n";
+  const data = JSON.stringify(file, null, 2) + "\n";
   await writeFile(dest, data, "utf-8");
   await copyFile(dest, `${dest}.bak`);
   await pushConfig(`settings.agents/${agentName}/agent.json`, data);

@@ -6,21 +6,14 @@ const DEF = {
   displayName: "My Agent",
   description: "Does things",
   entryPath: "agents/my-agent/main.ts",
-  pluginPath: "/home/user/.dovepaw-lite/plugins/my-plugin",
 } as unknown as AgentDef;
 
 const CWD = "/tmp/workspace/my-agent";
 
 describe("buildAgentConfig", () => {
-  it("falls back to tmp dir when pluginPath is absent", () => {
-    const def = { ...DEF, pluginPath: undefined } as unknown as AgentDef;
-    const config = buildAgentConfig(def, CWD, {}, []);
-    expect(config.scriptPath).toMatch(/\/tmp\/my-agent\/main\.ts$/);
-  });
-
-  it("builds scriptPath from pluginPath + entryPath", () => {
+  it("builds scriptPath from AGENT_LOCAL_DIR and agent name", () => {
     const config = buildAgentConfig(DEF, CWD, {}, []);
-    expect(config.scriptPath).toBe("/home/user/.dovepaw-lite/plugins/my-plugin/agents/my-agent/main.ts");
+    expect(config.scriptPath).toMatch(/agent-local\/my-agent\/main\.ts$/);
   });
 
   it("sets agentName and whatItDoes from def", () => {
