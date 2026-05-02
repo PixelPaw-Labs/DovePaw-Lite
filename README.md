@@ -371,6 +371,60 @@ print(reply)
 
 ---
 
+## Security
+
+### Dove Mode
+
+Dove operates in one of three modes, configured in Settings → Dove:
+
+| Mode | SDK permission mode | Effect |
+|---|---|---|
+| **read-only** | `default` | Blocks all write tools via SDK `disallowedTools` + PreToolUse hooks. Write-capable Bash patterns (redirects, `rm`, `mv`, interpreters) are caught by a secondary regex gate. |
+| **supervised** *(default)* | `acceptEdits` | File edits are auto-approved; Bash commands and other tool calls prompt the user in the browser before executing. |
+| **autonomous** | `bypassPermissions` | All tool use is auto-approved. Suitable for fully-trusted local use only. |
+
+### PreToolUse hooks (enforcement layer)
+
+PreToolUse hooks run inside the SDK's tool-dispatch loop and act as a second gate independent of the SDK's own permission model.
+
+**Read-only enforcement.** When Dove mode is `read-only`, the hooks block every tool on the `disallowedTools` list (e.g. `Write`, `Edit`, `TodoWrite`, `CronCreate`) and inspect every `Bash` call for write patterns (output redirects `>`, `sed -i`, destructive commands). A tool that reaches the hook and matches is denied with an explanatory reason — it cannot be bypassed by the agent.
+
+**Directory restriction for sub-agents.** Each agent sub-process is given an `allowedDirectories` list: its workspace path plus the agent source directory and persistent state directories. Any `Edit` or `Write` call targeting a path outside that list is denied by a PreToolUse hook before the file is touched:
+
+```
+"<resolved_path>" is outside the allowed directories: /tmp/workspaces/.my-agent/...
+You should stop and reconsider if you really need to access this path.
+```
+
+The agent is instructed to ask the user for explicit permission before retrying.
+
+**ScheduleWakeup guard.** A hook blocks `ScheduleWakeup` while any `await_*` tool call is pending, preventing agents from scheduling a wake-up to defer polling.
+
+### Interactive permissions (`canUseTool`)
+
+In `supervised` mode, Dove uses a `canUseTool` callback instead of auto-approving everything. When a tool call needs approval, the server sends a `permission` SSE event to the browser:
+
+```json
+{ "type": "permission", "requestId": "...", "toolName": "Bash", "toolInput": { "command": "..." }, "title": "..." }
+```
+
+The user approves or denies via `POST /api/chat/permission`:
+
+```json
+{ "requestId": "...", "allowed": true }
+```
+
+Until the user responds, the agent is paused. If the browser disconnects, pending permissions are aborted and the agent stops waiting.
+
+### Sub-agent isolation
+
+Agents launched by Dove run as SDK sub-agents (`permissionMode: "acceptEdits"`) with:
+- An isolated workspace directory (under `~/.dovepaw-lite/workspaces/`)
+- A scoped `allowedDirectories` list enforced by PreToolUse hooks
+- A fixed `allowedTools` list — only the `start_<name>` and `await_<name>` MCP tools are available; no arbitrary tool expansion
+
+---
+
 ## Contributing
 
 1. Fork the repo and create a branch from `main`.
