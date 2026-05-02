@@ -215,6 +215,162 @@ npm run dev
 
 ---
 
+## Chat API
+
+The chat API is a plain HTTP SSE endpoint. Any frontend — Slack bot, CLI, mobile app — can talk to Dove without going through the Next.js UI.
+
+### Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `POST` | `/api/chat` | Send a message, receive SSE stream |
+| `PATCH` | `/api/chat` | Stop the current turn (keep session) |
+| `DELETE` | `/api/chat` | Stop and optionally delete a session |
+
+### POST /api/chat
+
+**Request body** (`application/json`):
+
+```json
+{ "message": "Run the hello-world agent", "sessionId": null }
+```
+
+- `message` — the user's text
+- `sessionId` — `null` on the first message; the value from the `session` event on every subsequent message in the same conversation
+
+**Response:** `text/event-stream`. Each event is a line of the form:
+
+```
+data: <JSON>\n\n
+```
+
+Parse each line by stripping the `data: ` prefix and JSON-parsing the remainder.
+
+### SSE event types
+
+| `type` | Payload | Action |
+|---|---|---|
+| `session` | `{ sessionId: string }` | **Save this.** Pass it as `sessionId` on every subsequent turn to resume the conversation. |
+| `text` | `{ content: string }` | Append to the response buffer — Dove's reply arrives as incremental deltas. |
+| `thinking` | `{ content: string }` | Extended thinking delta — show or ignore. |
+| `tool_call` | `{ name: string }` | Dove invoked a tool — informational. |
+| `tool_input` | `{ content: string }` | Tool arguments JSON — informational. |
+| `result` | `{ content: string }` | Full response text, emitted when no `text` deltas were sent. Use as fallback. |
+| `progress` | `{ result: { output, progress } }` | Agent task progress — workflow step labels from a downstream agent. |
+| `done` | — | Stream complete. Flush the response buffer. |
+| `cancelled` | — | User stopped the turn. |
+| `error` | `{ content: string }` | Query failed. |
+| `permission` | `{ requestId, toolName, toolInput, title? }` | Dove needs user approval to use a tool. POST `{ requestId, allowed }` to `/api/chat/permission`. |
+| `question` | `{ requestId, questions }` | Dove is asking clarifying questions. POST `{ requestId, answers }` to `/api/chat/question`. |
+
+### Stop or delete a session
+
+```bash
+# Stop the current turn (subprocess exits, session row kept for resume)
+curl -X PATCH http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"<id>"}'
+
+# Delete a session entirely
+curl -X DELETE http://localhost:3000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"<id>","method":"delete"}'
+```
+
+### JavaScript example (multi-turn)
+
+```typescript
+async function chat(baseUrl: string, message: string, sessionId: string | null) {
+  const res = await fetch(`${baseUrl}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, sessionId }),
+  });
+
+  let text = "";
+  let nextSessionId: string | null = null;
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    for (const line of buffer.split("\n\n")) {
+      if (!line.startsWith("data: ")) continue;
+      const event = JSON.parse(line.slice(6));
+
+      if (event.type === "session") nextSessionId = event.sessionId;
+      else if (event.type === "text") text += event.content;
+      else if (event.type === "result" && !text) text = event.content;
+      else if (event.type === "done") break;
+      else if (event.type === "error") throw new Error(event.content);
+    }
+    buffer = buffer.endsWith("\n\n") ? "" : buffer.split("\n\n").at(-1) ?? "";
+  }
+
+  return { text, sessionId: nextSessionId };
+}
+
+// First turn — no sessionId
+const turn1 = await chat("http://localhost:3000", "Hello Dove!", null);
+console.log(turn1.text);
+
+// Second turn — resume the same conversation
+const turn2 = await chat("http://localhost:3000", "What agents do you have?", turn1.sessionId);
+console.log(turn2.text);
+```
+
+### Python example
+
+```python
+import httpx, json
+
+def chat(base_url: str, message: str, session_id: str | None):
+    text, next_session_id = "", None
+    with httpx.stream("POST", f"{base_url}/api/chat",
+                      json={"message": message, "sessionId": session_id},
+                      timeout=None) as r:
+        buffer = ""
+        for chunk in r.iter_text():
+            buffer += chunk
+            while "\n\n" in buffer:
+                block, buffer = buffer.split("\n\n", 1)
+                if not block.startswith("data: "):
+                    continue
+                event = json.loads(block[6:])
+                if event["type"] == "session":
+                    next_session_id = event["sessionId"]
+                elif event["type"] == "text":
+                    text += event["content"]
+                elif event["type"] == "result" and not text:
+                    text = event["content"]
+                elif event["type"] in ("done", "cancelled"):
+                    break
+                elif event["type"] == "error":
+                    raise RuntimeError(event["content"])
+    return text, next_session_id
+
+# First turn
+reply, sid = chat("http://localhost:3000", "Hello Dove!", None)
+print(reply)
+
+# Second turn — resume
+reply, sid = chat("http://localhost:3000", "What agents do you have?", sid)
+print(reply)
+```
+
+### Notes for server deployments
+
+- The SSE stream can stay open for up to 24 hours (`maxDuration = 86400`) — set your proxy or load balancer timeout accordingly.
+- A `PATCH /api/chat` stop leaves the Claude subprocess running in the background; the conversation can still be resumed. `DELETE` with `method: "delete"` cleans it up entirely.
+- When the client disconnects mid-stream, the subprocess keeps running. This is intentional — long-running agents finish their work even if the Slack bot connection drops. Resume with the saved `sessionId` when reconnecting.
+- Each `sessionId` is a UUID. Conversation history (full message content) is stored by the Claude Agent SDK in `~/.claude/projects/` on the server — not in the in-memory store. The in-memory store only holds session status and progress metadata, which is lost on server restart.
+
+---
+
 ## Contributing
 
 1. Fork the repo and create a branch from `main`.
