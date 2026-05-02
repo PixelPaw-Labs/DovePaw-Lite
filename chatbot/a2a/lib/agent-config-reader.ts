@@ -24,11 +24,4 @@ export class AgentConfigReader {
     return { extraEnv, repoSlugs };
   }
 
-  /**
-   * Returns the MCP tools for linked agents.
-   * Agent links are not supported in Lite — always returns [].
-   */
-  async resolveLinkedTools(): Promise<Array<{ name: string; description: string }>> {
-    return [];
-  }
 }

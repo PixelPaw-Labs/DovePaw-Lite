@@ -23,7 +23,6 @@ export const SUBAGENT_PROMPT_REMINDER = `<reminder>
 export function buildSubAgentHooks(
   cwd: string,
   additionalDirectories: string[],
-  agentLinkTools: Array<{ name: string; description: string }>,
   registry: PendingRegistry,
   manifestKey: string,
   agentDisplayName?: string,

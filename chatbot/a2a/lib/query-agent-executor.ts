@@ -165,8 +165,6 @@ export class QueryAgentExecutor {
 
       const registry = new PendingRegistry();
 
-      const chatToTools = await this.agentConfigReader.resolveLinkedTools();
-
       await withMcpQuery(
         [
           makeStartScriptTool(
@@ -211,13 +209,11 @@ export class QueryAgentExecutor {
                 allowedTools: [
                   `mcp__agents__${startRunScriptToolName(this.def.manifestKey)}`,
                   `mcp__agents__${awaitRunScriptToolName(this.def.manifestKey)}`,
-                  ...chatToTools.map((t) => `mcp__agents__${t.name}`),
                 ],
                 mcpServers: { agents: innerMcpServer },
                 hooks: buildSubAgentHooks(
                   cwd,
                   additionalDirectories,
-                  chatToTools,
                   registry,
                   this.def.manifestKey,
                   this.def.displayName,
