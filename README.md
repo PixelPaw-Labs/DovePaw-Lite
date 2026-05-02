@@ -1,6 +1,6 @@
 # DovePaw
 
-Multi-agent orchestration runtime built on the [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk). Drop TypeScript agent scripts into `agent-local/`, run `npm run dev`, and a Dove chatbot immediately surfaces them as conversational tools — no config, no hardcoded ports. Schedule agents via macOS launchd or Linux cron, or deploy to ECS with S3-backed config.
+Multi-agent orchestration runtime built on the [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk). Drop agent scripts into `agent-local/`, run `npm run dev`, and a Dove chatbot immediately surfaces them as conversational tools — no config, no hardcoded ports. Scripts can be TypeScript (`.ts`), Python (`.py`), Ruby (`.rb`), or shell (`.sh`). Schedule agents via macOS launchd or Linux cron, or deploy to ECS with S3-backed config.
 
 ---
 
@@ -37,8 +37,8 @@ Browser (Next.js)
 Dove — Claude Agent SDK orchestrator
   ↓ ask_* / start_* / await_* MCP tools
 A2A Servers — one Express process per agent (OS-assigned ports)
-  ↓ spawn tsx
-Agent Scripts — TypeScript files in agent-local/<name>/main.ts
+  ↓ spawn (tsx / python3 / ruby / bash)
+Agent Scripts — agent-local/<name>/main.ts (or .py / .rb / .sh)
 ```
 
 ### How it flows
@@ -47,7 +47,7 @@ Agent Scripts — TypeScript files in agent-local/<name>/main.ts
 
 2. **Dove → A2A server.** When Dove decides to invoke an agent, it calls one of its MCP tools. The tool sends an A2A message to that agent's Express server over SSE. Ports are OS-assigned at startup and published to `~/.dovepaw-lite/.ports.<port>.json` — no hardcoded ports.
 
-3. **A2A server → agent script.** The A2A server spawns the agent's `main.ts` via `tsx`. The script receives the instruction as `process.argv[2]`, runs its TypeScript logic, and returns output. The server streams the result back up through the A2A protocol to Dove, then to the browser as SSE events.
+3. **A2A server → agent script.** The A2A server spawns the agent script using a runtime determined by its file extension (`.ts` → `tsx`, `.py` → `python3`, `.rb` → `ruby`, `.sh` → `bash`). The script receives the instruction as `argv[1]` (or `process.argv[2]` in Node), runs its logic, and returns output. The server streams the result back up through the A2A protocol to Dove, then to the browser as SSE events.
 
 4. **Scheduling.** Agents with a `schedule` field in their `agent.json` can be installed as cron jobs (Linux) or launchd daemons (macOS) via `npm run install`. The scheduler fires the A2A trigger script on the configured interval. No schedule = on-demand only.
 
@@ -68,7 +68,7 @@ Agent Scripts — TypeScript files in agent-local/<name>/main.ts
 agent-local/              ← your agent scripts live here
   hello-world/
     agent.json            ← agent metadata: name, icon, schedule, MCP description
-    main.ts               ← agent entry point
+    main.ts               ← agent entry point (default; .py / .rb / .sh also supported)
 
 chatbot/
   app/                    ← Next.js pages and API routes
@@ -108,7 +108,7 @@ To add an agent manually:
 ```
 agent-local/my-agent/
   agent.json
-  main.ts
+  main.ts        ← default entry; set "scriptFile" in agent.json to use .py / .rb / .sh
 ```
 
 2. **`agent.json`** — required fields:
@@ -121,6 +121,7 @@ agent-local/my-agent/
   "displayName": "My Agent",
   "description": "What this agent does — shown to Dove as the MCP tool description.",
   "iconName": "Bot",
+  "scriptFile": "main.ts",
   "schedulingEnabled": false,
   "locked": false,
   "doveCard": {
@@ -140,7 +141,7 @@ agent-local/my-agent/
 }
 ```
 
-3. **`main.ts`** — receives the user's instruction as `process.argv[2]`:
+3. **Entry script** (`main.ts` by default, or whatever `scriptFile` points to) — receives the user's instruction as the first argument (`process.argv[2]` in TypeScript/Node, `sys.argv[1]` in Python, `$1` in shell):
 
 ```typescript
 import { createLogger } from "@dovepaw/agent-sdk";
@@ -198,7 +199,7 @@ All runtime state lives outside the repo under `~/.dovepaw-lite/` (override with
 Set `S3_CONFIG_BUCKET` to enable S3 write-through for all JSON config writes. On container startup, pull config before starting the app:
 
 ```bash
-aws s3 sync s3://$S3_CONFIG_BUCKET/ ${DOVEPAW_DATA_DIR:-~/.dovepaw}/
+aws s3 sync s3://$S3_CONFIG_BUCKET/ ${DOVEPAW_DATA_DIR:-~/.dovepaw-lite}/
 npm run dev
 ```
 
