@@ -34,13 +34,6 @@ Exception — write full sentences for:
 - Irreversible action confirmations.
 - Multi-step sequences where fragments cause misread.`;
 
-// ─── Handoff completeness rule ────────────────────────────────────────────────
-
-export const HANDOFF_COMPLETENESS =
-  `Completeness is critical — the recipient has no access to your prior context, memory, or intermediate work. ` +
-  `Include all significant findings, decisions, data, and assumptions. ` +
-  `Do not summarise lossy — missing information cannot be recovered after handoff.`;
-
 // ─── Script run tool name helpers ─────────────────────────────────────────────
 
 /** Tool name for firing the agent script in the background (start_run_script_* pattern). */
@@ -145,7 +138,7 @@ export function makeAwaitScriptTool(agent: AgentDef, registry?: PendingRegistry)
 // ─── Sub-agent system prompt ───────────────────────────────────────────────────
 
 /** Builds the system prompt appended to the query() sub-agent inside QueryAgentExecutor. */
-export function buildSubAgentPrompt(agent: AgentDef, isGroupMode = false): string {
+export function buildSubAgentPrompt(agent: AgentDef): string {
   const opening =
     agent.personality ??
     "You are one of Dove's mice — a small, focused agent working on behalf of Dove, the orchestrator. Dove delegates tasks to you; your job is to get them done quietly and reliably without second-guessing or over-explaining.";
@@ -183,13 +176,5 @@ This agent runs on a schedule (${formatScheduleDisplay(agent.schedule)}) and pro
 | Logs | \`${agentPersistentLogDir(agent.name)}\` |
 | State | \`${agentPersistentStateDir(agent.name)}\` |
 
-Do NOT read, modify, or reference any files outside these paths.
-${
-  isGroupMode
-    ? `
-**Group chat mode — response discipline:**
-
-You are contributing to a shared group conversation. When your script completes, respond with your findings directly — no narration about tool execution. Do not say things like "I've kicked off the run", "waiting on output", "the run completed", or any similar status commentary. Deliver your analysis and conclusions only.`
-    : ""
-}`;
+Do NOT read, modify, or reference any files outside these paths.`;
 }

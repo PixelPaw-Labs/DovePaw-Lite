@@ -205,7 +205,7 @@ export class QueryAgentExecutor {
                 systemPrompt: {
                   type: "preset",
                   preset: "claude_code",
-                  append: buildSubAgentPrompt(this.def, false),
+                  append: buildSubAgentPrompt(this.def),
                 },
                 additionalDirectories,
                 allowedTools: [
