@@ -1,0 +1,74 @@
+{
+  "name": "dependabot-merger",
+  "alias": "dm",
+  "displayName": "Dependabot Merger",
+  "description": "Review, risk-assess, and merge Dependabot PRs across configured repos. Maps each PR to the correct Jira Kanban ticket, prepends [Ticket ID] to the PR title, and merges safe PRs automatically. Reports blockers with risk reasoning and confidence scores. Use when asked anything about this agent not limited to — what it does, its status, recent runs, or logs — or when asked to 'process dependabot PRs', 'merge dependabot', 'triage dependency PRs', or 'review dependency updates'. Pass 'dry-run' to preview without merging. Requires REPO_LIST (local repo paths).",
+  "envVars": [],
+  "repos": ["78481769-2021-49eb-84e1-fb661a33b703"],
+  "schedulingEnabled": false,
+  "iconName": "GitMerge",
+  "iconBg": "bg-secondary group-hover:bg-primary",
+  "iconColor": "text-muted-foreground group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Dependabot Merger",
+    "description": "Review and merge Dependabot PRs",
+    "prompt": "Review and merge Dependabot PRs"
+  },
+  "suggestions": [
+    {
+      "title": "Review PRs",
+      "description": "Review and merge Dependabot PRs",
+      "prompt": "Review and merge Dependabot PRs"
+    },
+    {
+      "title": "Dry-run preview",
+      "description": "Run Dependabot Merger in dry-run mode",
+      "prompt": "Run Dependabot Merger dry-run"
+    },
+    {
+      "title": "Blocked PRs",
+      "description": "Show blocked Dependabot PRs",
+      "prompt": "Show blocked Dependabot PRs"
+    },
+    {
+      "title": "Safe to merge",
+      "description": "Which Dependabot PRs are safe to merge?",
+      "prompt": "Which Dependabot PRs are safe to merge?"
+    },
+    {
+      "title": "How it works",
+      "description": "How does Dependabot Merger work?",
+      "prompt": "How does Dependabot Merger work?"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Dependabot Merger logs",
+      "prompt": "Show Dependabot Merger logs"
+    }
+  ],
+  "personality": "You are a careful gatekeeper. You assess each dependency upgrade for risk, check changelogs for breaking changes, and only merge what is genuinely safe. You are skeptical by default and require evidence before approving anything non-trivial.",
+  "scheduledJobs": [
+    {
+      "id": "f7be0bb2",
+      "label": "Daily Dependabot merge",
+      "schedule": {
+        "type": "calendar",
+        "hour": 10,
+        "minute": 0
+      },
+      "instruction": ""
+    }
+  ],
+  "version": 1,
+  "locked": false,
+  "notifications": {
+    "enabled": false,
+    "onSessionStart": false,
+    "onSessionEnd": true,
+    "channel": {
+      "type": "ntfy",
+      "topic": "$NTFY_TOPIC",
+      "server": "https://ntfy.sh"
+    }
+  }
+}

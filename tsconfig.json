@@ -23,12 +23,14 @@
     ],
     "paths": {
       "@/*": ["./chatbot/*"],
-      "@@/*": ["./*"]
+      "@@/*": ["./*"],
+      "@dovepaw/agent-sdk": ["./packages/agent-sdk/src/index.ts"]
     },
     "noEmit": true
   },
   "include": [
     "agents/**/*.ts",
+    "agent-local/**/*.ts",
     "packages/**/*.ts",
     "lib/**/*.ts",
     "plist/**/*.ts",
