@@ -62,8 +62,6 @@ export function makeStartScriptTool(
   onProgress?: (message: string, artifacts: Record<string, string>) => void,
   taskId?: string,
   registry?: PendingRegistry,
-  /** When true, appends the group-chat reminder (save to moments) to the instruction. */
-  isGroupChat?: boolean,
 ) {
   return tool(
     startRunScriptToolName(agent.manifestKey),
@@ -75,18 +73,7 @@ export function makeStartScriptTool(
         .describe(`Instruction to pass to the ${agent.displayName} script`),
     },
     async ({ instruction = "" }) => {
-      const finalInstruction = isGroupChat
-        ? `${instruction}
-<reminder>
-You are participating in a group task. Before starting:
-- Read ${config.workspacePath}/members/roster.md to understand who is in this group. Only collaborate with, assign work to, or communicate with the agents listed there — no one else.
-- Save to ${config.workspacePath}/moments/ when: decision reached, artifact complete, insight worth sharing.
-  Writing style:
-${MOMENTS_PATTERN.split("\n")
-  .map((l) => `  ${l}`)
-  .join("\n")}
-</reminder>`
-        : instruction;
+      const finalInstruction = instruction;
       const clonedPaths = await recloneReposIntoWorkspace(
         config.workspacePath,
         repoSlugs,

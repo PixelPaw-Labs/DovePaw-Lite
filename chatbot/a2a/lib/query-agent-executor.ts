@@ -27,7 +27,7 @@ import { PendingRegistry } from "@/lib/pending-registry";
 import { ExecutorPublisher } from "./executor-publisher";
 import { createAgentWorkspace, restoreAgentWorkspace } from "./workspace";
 import type { AgentWorkspace } from "./workspace";
-import { SessionManager, type SessionInfo } from "@/lib/session-manager";
+import { SessionManager } from "@/lib/session-manager";
 import { relaySessionEvent } from "@/lib/relay-to-chatbot";
 
 export interface ExecutorPersistence {
@@ -55,8 +55,6 @@ import { markProcessing, markIdle } from "./processing-registry";
  * Settings (env vars, repo list) are resolved fresh on each execution.
  */
 const LABEL_MAX_LEN = 60;
-
-export { SessionInfo };
 
 export class QueryAgentExecutor {
   private abortController: AbortController | null = null;
