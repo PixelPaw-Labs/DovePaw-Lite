@@ -389,7 +389,7 @@ PreToolUse hooks run inside the SDK's tool-dispatch loop and act as a second gat
 
 **Read-only enforcement.** When Dove mode is `read-only`, the hooks block every tool on the `disallowedTools` list (e.g. `Write`, `Edit`, `TodoWrite`, `CronCreate`) and inspect every `Bash` call for write patterns (output redirects `>`, `sed -i`, destructive commands). A tool that reaches the hook and matches is denied with an explanatory reason — it cannot be bypassed by the agent.
 
-**Directory restriction for sub-agents.** Each agent sub-process is given an `allowedDirectories` list: its workspace path plus the agent source directory and persistent state directories. Any `Edit` or `Write` call targeting a path outside that list is denied by a PreToolUse hook before the file is touched:
+**Directory restriction.** Both Dove and each agent sub-process are given an `allowedDirectories` list (Dove: the project `cwd` plus any additional directories it needs; sub-agents: the workspace path plus the agent source and persistent state directories). Any `Edit`, `Write`, `NotebookEdit`, or `Bash` write call targeting a path outside that list is denied by a PreToolUse hook before the file is touched:
 
 ```
 "<resolved_path>" is outside the allowed directories: /tmp/workspaces/.my-agent/...
