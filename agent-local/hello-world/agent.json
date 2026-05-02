@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "name": "hello-world",
+  "alias": "hw",
+  "displayName": "Hello World",
+  "description": "A minimal example agent. Use it to verify your DovePaw Lite setup is working correctly.",
+  "iconName": "Bot",
+  "schedulingEnabled": false,
+  "locked": false,
+  "doveCard": {
+    "title": "Hello World",
+    "description": "Test your DovePaw Lite setup",
+    "prompt": "Say hello and describe what you can do"
+  },
+  "suggestions": [
+    {
+      "title": "Say hello",
+      "description": "Test the agent is running",
+      "prompt": "Say hello!"
+    }
+  ],
+  "repos": [],
+  "envVars": []
+}
