@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { setActiveSession, upsertSession } from "@/lib/db-lite";
+import { upsertSession } from "@/lib/db-lite";
 import type { StreamedResult } from "@/lib/a2a-client";
 import type { SessionMessage } from "@/lib/message-types";
 import type { AgentWorkspace } from "@/a2a/lib/workspace";
@@ -94,7 +94,6 @@ export class SessionManager {
             segments: [{ type: "text", content: result.output }],
           }
         : null);
-    setActiveSession(agentId, contextId);
     upsertSession({
       id: contextId,
       agentId,

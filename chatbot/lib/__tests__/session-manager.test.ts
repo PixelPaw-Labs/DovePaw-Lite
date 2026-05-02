@@ -7,7 +7,7 @@ const TMP_DIR = join(tmpdir(), `dovepaw-session-manager-test-${process.pid}`);
 vi.mock("@@/lib/paths", () => ({ DOVEPAW_DIR: TMP_DIR }));
 
 const { SessionManager } = await import("../session-manager");
-const { getSessionDetail, getActiveSession, closeDb } = await import("../db-lite");
+const { getSessionDetail, closeDb } = await import("../db-lite");
 
 beforeEach(() => mkdirSync(TMP_DIR, { recursive: true }));
 
@@ -40,11 +40,6 @@ describe("SessionManager.save", () => {
       segments: [{ type: "text", content: "done" }],
     });
     expect(detail!.progress).toEqual([{ message: "Bash", artifacts: { "tool-call": "Bash" } }]);
-  });
-
-  it("sets the agent's active session", () => {
-    SessionManager.save("test-agent", "ctx-2", { output: "", progress: [] });
-    expect(getActiveSession("test-agent")).toBe("ctx-2");
   });
 
   it("uses provided assistantMsg instead of building from result.output", () => {

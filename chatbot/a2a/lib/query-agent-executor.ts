@@ -41,7 +41,6 @@ export interface ExecutorPersistence {
     status?: string;
     senderAgentId?: string;
   }): void;
-  setActive(agentId: string, contextId: string): void;
   setStatus(contextId: string, status: string): void;
 }
 import { markProcessing, markIdle } from "./processing-registry";
@@ -132,7 +131,6 @@ export class QueryAgentExecutor {
     // ResultManager.currentTask is only set when it sees a kind:"task" event.
     publisher.publishTask();
 
-    this.persistence?.setActive(this.def.name, contextId);
     publishProgress("Starting…");
 
     const [{ extraEnv, repoSlugs }, agentSettings, globalSettings] = await Promise.all([

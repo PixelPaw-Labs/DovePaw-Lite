@@ -6,7 +6,6 @@ import type { ChatMessage } from "./use-messages";
 import {
   agentChatUrl,
   sessionStreamUrl,
-  activeSessionUrl,
   sessionDetailUrl,
   type AgentId,
 } from "@/lib/agent-api-urls";
@@ -15,7 +14,6 @@ import { processActiveStreamEvent } from "./process-stream-event";
 import { readSseStream } from "./read-sse-stream";
 import { startPolling } from "./poll-session";
 import {
-  activeSessionResponseSchema,
   fetchSessionDetail,
   type SessionStatus,
 } from "./session-api-client";
@@ -337,11 +335,6 @@ export function useChatSession(agentId: AgentId) {
     setCurrentSessionId(null);
     setPendingPermissions([]);
     setPendingQuestions([]);
-    void fetch(activeSessionUrl(agentId), {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: null }),
-    });
   }, [agentId]);
 
   // ─── deleteSession ────────────────────────────────────────────────────────────
@@ -570,55 +563,6 @@ export function useChatSession(agentId: AgentId) {
     void sendMessage(next);
   }, [isLoading, sendMessage]);
 
-  // ─── Mount: load last session ─────────────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const { id } = activeSessionResponseSchema.parse(
-          await (await fetch(activeSessionUrl(agentId))).json(),
-        );
-        const resolvedId = id;
-        if (!resolvedId) return;
-        if (cancelled) return;
-
-        const {
-          messages: stamped,
-          status,
-          resumeSeq,
-        } = await fetchSessionDetail(sessionDetailUrl(agentId, resolvedId), agentId);
-        if (cancelled) return;
-
-        sessionIdRef.current = resolvedId;
-        setCurrentSessionId(resolvedId);
-
-        if (status === "running") {
-          reconnectRunningSession({
-            sessionId: resolvedId,
-            stamped,
-            resumeSeq,
-            warmReconnect: lastSeqRef.current !== 0,
-            isCancelled: () => cancelled,
-          });
-        } else {
-          setMessages(stamped);
-        }
-      } catch {
-        // no prior session — start fresh
-      }
-    })();
-    return () => {
-      cancelled = true;
-      abortRef.current?.abort();
-      abortRef.current = null;
-      if (pollTimeoutRef.current) {
-        clearTimeout(pollTimeoutRef.current);
-        pollTimeoutRef.current = null;
-      }
-    };
-    // Only re-run on agentId changes. connectStream is stable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
 
   return {
     messages,

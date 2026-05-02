@@ -44,7 +44,7 @@ import type { ExecutorPublisher } from "./executor-publisher";
 export { portsManifestSchema, writePortsManifest, readPortsManifest } from "./ports-manifest";
 export type { PortsManifest } from "./ports-manifest";
 import { SessionManager } from "@/lib/session-manager";
-import { upsertSession, setActiveSession, setSessionStatus } from "@/lib/db-lite";
+import { upsertSession, setSessionStatus } from "@/lib/db-lite";
 import { scheduler } from "@@/lib/scheduler";
 
 // ─── Event bus manager ────────────────────────────────────────────────────────
@@ -193,7 +193,6 @@ export function createServerFromDef(def: AgentDef, port: number): void {
   const activeExecutors = new Map<string, QueryAgentExecutor>();
   const persistence = {
     upsertSession,
-    setActive: setActiveSession,
     setStatus: setSessionStatus,
   };
   const executor: AgentExecutor = {

@@ -36,10 +36,6 @@ describe("useChatSession", () => {
   // ─── Initial state ─────────────────────────────────────────────────────────
 
   it("starts with empty messages and isLoading false", async () => {
-    // mount: GET /api/chat/active-session → {id: null}
-    vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify({ id: null }), { status: 200 }),
-    );
     const { result } = renderHook(() => useChatSession("dove"));
     expect(result.current.messages).toEqual([]);
     expect(result.current.isLoading).toBe(false);
@@ -50,8 +46,6 @@ describe("useChatSession", () => {
 
   it("sendMessage adds user and assistant messages on success", async () => {
     vi.mocked(fetch)
-      // mount active-session
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       // sendMessage POST
       .mockResolvedValueOnce(
         makeSseResponse([{ type: "result", content: "pong" }, { type: "done" }]),
@@ -74,8 +68,6 @@ describe("useChatSession", () => {
       resolveStream = r;
     });
     vi.mocked(fetch)
-      // mount active-session
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
       // sendMessage POST → pending stream
       .mockReturnValueOnce(pending);
 
@@ -200,9 +192,7 @@ describe("useChatSession", () => {
 
   it("newSession resets all state", async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: null }), { status: 200 }))
-      .mockResolvedValueOnce(makeSseResponse([{ type: "result", content: "hi" }, { type: "done" }]))
-      .mockResolvedValueOnce(new Response("{}", { status: 200 })); // PUT active-session
+      .mockResolvedValueOnce(makeSseResponse([{ type: "result", content: "hi" }, { type: "done" }]));
 
     const { result } = renderHook(() => useChatSession("dove"));
 

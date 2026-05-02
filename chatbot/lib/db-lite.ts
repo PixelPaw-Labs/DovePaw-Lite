@@ -67,7 +67,6 @@ interface StoredSession {
 }
 
 const sessions = new Map<string, StoredSession>();
-const activeSessions = new Map<string, string | null>();
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -104,13 +103,6 @@ export function upsertSession(args: UpsertSessionArgs): void {
   });
 }
 
-export function setActiveSession(agentId: string, contextId: string | null): void {
-  activeSessions.set(agentId, contextId);
-}
-
-export function getActiveSession(agentId: string): string | null {
-  return activeSessions.get(agentId) ?? null;
-}
 
 export function getSessionStatus(id: string): SessionStatus | null {
   return sessions.get(id)?.status ?? null;
@@ -147,14 +139,10 @@ export function getAllSessionWorkspacePaths(): string[] {
 
 export function deleteSession(id: string): void {
   sessions.delete(id);
-  for (const [agentId, contextId] of activeSessions) {
-    if (contextId === id) activeSessions.set(agentId, null);
-  }
 }
 
 export function deleteAllSessions(): void {
   sessions.clear();
-  for (const agentId of activeSessions.keys()) activeSessions.set(agentId, null);
 }
 
 export function setGroupMessage(_sessionId: string, _text: string): void {}
