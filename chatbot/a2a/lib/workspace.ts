@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { rmdirSync, rmSync, existsSync, writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { AGENTS_ROOT, KARPATHY_HOOK_SRC, agentWorkspacePath } from "@@/lib/paths";
+import { KARPATHY_HOOK_SRC, agentWorkspacePath } from "@@/lib/paths";
 
 export interface AgentWorkspace {
   /** Absolute path to the UUID workspace directory. */
@@ -101,20 +101,6 @@ function buildCleanup(workspacePath: string, parentDir: string): () => void {
  */
 export function restoreAgentWorkspace(workspacePath: string): AgentWorkspace {
   return { path: workspacePath, cleanup: buildCleanup(workspacePath, dirname(workspacePath)) };
-}
-
-/**
- * Derive the agent source directory from an entryPath.
- * e.g. "agents/get-shit-done/main.ts" → "{scriptRoot}/agents/get-shit-done"
- *
- * @param entryPath  Path relative to scriptRoot (core agents) or absolute (plugin agents)
- * @param scriptRoot Root directory to resolve relative paths against. Defaults to AGENTS_ROOT.
- */
-export function agentSourceDirFromEntry(
-  entryPath: string,
-  scriptRoot: string = AGENTS_ROOT,
-): string {
-  return join(scriptRoot, dirname(entryPath));
 }
 
 /**

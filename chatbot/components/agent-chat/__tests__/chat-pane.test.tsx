@@ -42,10 +42,6 @@ vi.mock("../chat-message", () => ({
 vi.mock("../intro-card", () => ({
   IntroCard: () => <div data-testid="intro-card" />,
 }));
-vi.mock("../session-history-panel", () => ({
-  SessionHistoryPanel: () => <div data-testid="session-history-panel" />,
-}));
-
 // ─── Fixtures ──────────────────────────────────────────────────────────────────
 
 const emptyUserMsg = {
