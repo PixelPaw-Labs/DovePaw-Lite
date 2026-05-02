@@ -1,215 +1,192 @@
-# DovePaw
+# DovePaw Lite
 
-<img src="dove.webp" width="400" />
-
-## Why I Built This
-
-> Full story on Medium: [Building DovePaw — A Personal Engineering Blog Series](https://medium.com/@ywian/building-dovepaw-a-personal-engineering-blog-series-3634f3185b90)
-
-I use Claude Code daily. Probably 6–8 hours a day.
-
-But there's a category of work that drains me — the repeat, low-creative stuff. Writing docs. Triaging Dependabot PRs. Patching security alerts. The kind of tasks where the answer is obvious but someone still has to do it.
-
-My first instinct was the open-source community. Claude Code commands, skills, agents — people have built a lot. I tried OpenClaw. But here's where it gets tricky: security is a real concern. I only want to run agents I can read. I want to know exactly what they do before they touch my repos.
-
-So I built my own.
-
-I started small — a skill chain, or maybe skill orchestrator is the better name. Then I needed the agents to run without me. So I wired the Claude Agent SDK to macOS launchd daemons. A fleet of agents now running in the background. Scheduled. Autonomous. Mine.
-
-But I am a bit lazy to maintain what I built….
-
-The plist files. The compiled scripts. The agent configs scattered under `~/.dovepaw/`. After a few months, I lost the trace on which artifact came from where, what was safe to edit, what would get wiped on the next reinstall.
-
-I noticed a pain → I wanted something simple → So I built it. Again.
-
-Early 2026. A colleague posted in Slack: "I want to build a /implement `<jira-url>` skill."
-
-I already had something like that running. A /implement command that composed its context by reading other commands into XML tags — a trick I had documented in a Medium post. It felt clever. It also had some cracks.
-
-That Slack thread was the spark. It surfaced that other engineers wanted the same thing, pushed me to share publicly, and kicked off the next round of iteration.
-
-I didn't know that iteration would end with me building my own agent orchestrator named after my cat.
-
-DovePaw is a personal agent system built on top of the Claude Code harness. It doesn't sit beside Claude Code — it lives inside it, extending the harness environment with launchd daemons, MCP tools, the A2A protocol, and custom skills. At the centre of it is Dove: an orchestrator agent, also running on top of Claude Code, that can invoke, coordinate, or hand off to any of the background agents. The whole thing is wired together through the same environment Claude Code already runs in, which means the infrastructure is real — persistent, schedulable, composable — not just a wrapper around a chat API.
-
-This is the story of that build — and what I learned about maintaining the thing that maintains everything else.
+A stripped-down version of [DovePaw](https://github.com/PixelPaw-Labs/DovePaw) — the core agent runtime without plugins, group chat, agent links, or Electron. One Dove chatbot, one A2A server layer, your agent scripts in `agent-local/`.
 
 ---
 
-## Architecture — The Part That Runs Itself
-
-The design I landed on has one rule: **edit source, run install, everything else regenerates.**
+## Architecture
 
 ```
-Browser UI (Next.js :7473)
-  ↓ SSE
-Dove — orchestrator agent (Claude Code + MCP server)
-  ↓ ask_* / start_* / await_* tools
+Browser (Next.js)
+  ↓ SSE  /api/chat
+Dove — Claude Agent SDK orchestrator
+  ↓ ask_* / start_* / await_* MCP tools
 A2A Servers — one Express process per agent (OS-assigned ports)
   ↓ spawn tsx
-Agent Scripts — from installed plugin repos, run as launchd daemons
+Agent Scripts — TypeScript files in agent-local/<name>/main.ts
 ```
 
-Three things make this low-maintenance:
+### How it flows
 
-**Build artifacts are throw-away.** The `.mjs` daemon scripts and `.plist` files under `~/.dovepaw/cron/` are generated on every `npm run install`. Never edit them directly — they get wiped. The source of truth is always `agent.json` and the TypeScript in the plugin repo.
+1. **Browser → Dove.** The user sends a message to the Next.js chat UI. Dove is a Claude Agent SDK `query()` session that receives the message and a set of MCP tools — one trio (`ask_*`, `start_*`, `await_*`) per registered agent.
 
-**Agents are plugins, not hardcoded.** Each agent lives in its own plugin repo with a `dovepaw-plugin.json` manifest. DovePaw clones the repo into `~/.dovepaw/plugins/`, reads the manifest, and wires everything up at startup. Adding or removing an agent is just install or uninstall — no changes to DovePaw itself.
+2. **Dove → A2A server.** When Dove decides to invoke an agent, it calls one of its MCP tools. The tool sends an A2A message to that agent's Express server over SSE. Ports are OS-assigned at startup and published to `~/.dovepaw/.ports.<port>.json` — no hardcoded ports.
 
-**Ports and registry are dynamic.** A2A servers bind to OS-assigned ports at startup and publish a port manifest to `~/.dovepaw/`. Dove polls that manifest — no hardcoded ports, no manual wiring when agents restart.
+3. **A2A server → agent script.** The A2A server spawns the agent's `main.ts` via `tsx`. The script receives the instruction as `process.argv[2]`, runs its TypeScript logic, and returns output. The server streams the result back up through the A2A protocol to Dove, then to the browser as SSE events.
 
-The only things that need ongoing maintenance are the agent scripts themselves — the actual logic inside each plugin repo. Everything else regenerates from a single command.
+4. **Scheduling.** Agents with a `schedule` field in their `agent.json` can be installed as cron jobs (Linux) or launchd daemons (macOS) via `npm run install`. The scheduler fires the A2A trigger script on the configured interval. No schedule = on-demand only.
+
+### Key design decisions
+
+| Decision | Reason |
+|---|---|
+| In-memory session store (`db-lite.ts`) | No SQLite dependency — sessions live only for the process lifetime |
+| `agent-local/` scanned at startup | Agent discovery is a directory scan — add a folder, restart, it appears |
+| OS-assigned A2A ports | No port conflicts, no config to maintain |
+| Platform-neutral scheduler abstraction | `lib/scheduler.ts` adapts to launchd (macOS) or cron (Linux) |
 
 ---
 
-## What Kind of Agents Run Here
-
-Not skills. Skills are a single prompt file — stateless, one-shot, good for a bounded task.
-
-DovePaw is for agents that are too complex for that. The kind where you need to:
-
-- fetch data from an API, parse it, decide what to do next
-- loop over a list of repos deterministically, spawn a Claude subprocess per item
-- coordinate across multiple steps where some are code and some are reasoning
-- handle failures, retries, and state between runs
-
-The pattern I landed on: **write the scaffolding in TypeScript, leave the core work to Claude CLI.**
-
-The TypeScript handles the deterministic parts — which repos to touch, what data to fetch, how to structure the prompt, when to retry. Claude CLI handles everything else — reading code, making judgements, writing files, opening PRs, getting things done. The two layers stay separate. You don't ask Claude to loop over a list. You loop over the list in code and ask Claude once per item.
-
-And because each Claude invocation is itself a full Claude Code session, an agent script can spawn sub-agents — each with their own tools, context, and instructions. One agent orchestrates several. Those agents can orchestrate more. I call it an infinite agent chain (:joy:). In practice it means a single chatbot message can fan out into a coordinated fleet of Claude processes working across multiple repos simultaneously, each one focused, each one isolated.
-
-This keeps agents predictable. The scaffolding is testable. The Claude invocations are isolated. And when something breaks, you know which layer to debug.
-
-### Anatomy of an Agent Script
-
-Each agent is a single `main.ts` file. They all follow the same shape:
+## Repo Layout
 
 ```
-Configuration   — read env vars, resolve paths, create logger
-buildPrompt()   — construct what Claude CLI receives (may compose a skill invocation)
-main()          — orchestrate: gather data → call spawnClaudeWithSignals() → handle output
+agent-local/              ← your agent scripts live here
+  hello-world/
+    agent.json            ← agent metadata: name, icon, schedule, MCP description
+    main.ts               ← agent entry point
+
+chatbot/
+  app/                    ← Next.js pages and API routes
+  a2a/                    ← A2A Express servers (one per agent)
+  lib/                    ← shared chatbot utilities, db-lite.ts, hooks
+
+lib/                      ← shared library: agents, scheduler, settings, paths
+packages/agent-sdk/       ← shared agent utilities (Claude/Codex runners, git, logger)
+
+scripts/
+  chatbot-start.ts        ← starts A2A servers + Next.js dev server
 ```
-
-`spawnClaudeWithSignals()` from `@dovepaw/agent-sdk` is the Claude CLI invocation. That's the only place Claude runs. Everything before it is TypeScript.
-
-Agents are dual-mode. When the chatbot triggers one, the user's instruction arrives as `process.argv[2]` and the agent acts on it directly. When launchd fires the schedule with no argument, the agent runs in batch mode across all configured repos. Same script, two entry points.
-
-<img src="example2.png" width="600" />
-
----
-
-## Settings — Global and Per-Agent
-
-Two levels of config, both under `~/.dovepaw/`:
-
-**Global** (`settings.json`) — shared across all agents: repository list, API keys, global feature flags. Edit once, all agents pick it up on next run.
-
-**Per-agent** (`settings.agents/<name>/agent.json`) — schedule (cron expression), env vars injected at daemon install time, which repos the agent has access to, the agent's MCP description and icon. Each agent owns its own slice.
-
-The separation matters: global settings are for things every agent needs to know. Per-agent settings are for things only that agent should care about. Mixing them is how you end up with a config file no one understands six months later.
-
----
-
-## Agent Links
-
-Agents can be wired together. An agent link declares a directional connection — agent A can invoke agent B — and is stored in `~/.dovepaw/agent-links.json`.
-
-Dove, the orchestrator, uses these links to know which agents it can hand off to. Connectivity is gated on heartbeat — if an agent's A2A server isn't running, Dove won't try to route to it. No silent failures.
-
-This is how I chain work across agents: one agent surfaces findings, another acts on them, a third reports back. Each agent stays focused on one thing. The links define the flow.
-
----
-
-## Talking to Dove and the Agents
-
-<img src="example1.png" width="600" />
-
-There are two ways to interact.
-
-**Through Dove** — the orchestrator. Open the chatbot UI at `localhost:7473` and talk to Dove directly. Dove knows all the installed agents, their capabilities, and the links between them. You can ask Dove to kick off a task and it will route to the right agent, fire-and-forget or wait for the result, and report back. You don't need to know which agent does what — that's Dove's job.
-
-**Directly to an agent** — each agent also exposes its own chat interface. If you know exactly which agent you want, you can open its conversation and talk to it without going through Dove. Useful when you want to inspect state, re-run a specific job, or debug what an agent is doing.
-
-Both surfaces are in the same browser UI. Dove is just the one that coordinates the rest.
-
----
-
-## Installing Agents From Your Own Repos
-
-Plugin repos can be public or private. If your agent code touches private infrastructure — internal APIs, private repos, proprietary tooling — you probably don't want it in a public repo. I don't either.
-
-Install from any git URL you have access to:
-
-```bash
-# GitHub slug — uses gh CLI
-npm run plugin:add owner/my-agents
-
-# full git URL — any remote git clone understands
-npm run plugin:add https://github.com/owner/private-agents
-
-# local path — useful during development
-npm run plugin:add ../my-agents
-```
-
-DovePaw clones the repo into `~/.dovepaw/plugins/` using your existing git auth. SSH keys, GitHub CLI auth, HTTPS tokens — whatever you already have configured locally. Nothing extra to set up.
-
-This is the reason I built the plugin system this way. My agents are in private repos. The ones that touch work infrastructure especially. I can install them on any machine I own, update them with a git pull, and nothing about the sensitive parts ever leaves my control.
 
 ---
 
 ## Getting Started
 
-> **macOS only.** DovePaw uses launchd for daemon scheduling and an Electron menubar app to keep the A2A servers alive. Linux and Windows are not supported.
-
-> **Prerequisites.** Dove and all agent scripts invoke Claude under the hood. You need either an Anthropic API key (`ANTHROPIC_API_KEY`) or the Claude Code CLI installed and authenticated on your machine. Without one of these, nothing runs.
-
-**First time setup:**
+**Prerequisites:** Node.js 20+, Claude Code CLI authenticated (or `ANTHROPIC_API_KEY` set).
 
 ```bash
 npm install
-npm run install    # builds codebase, generates plists, registers launchd daemons, links skills
-npm run electron:dev
+npm run dev        # starts A2A servers + Next.js on an available port
 ```
 
-**Day-to-day:**
-
-```bash
-npm run electron:dev
-```
-
-That's it. `electron:dev` compiles the Electron shell, launches the `DovePawA2A` menubar app in the background, and starts the A2A servers and the chatbot UI. Everything runs under the Electron process — kill it and the servers go down with it.
-
-`npm run install` is only needed on first setup or after adding/removing agents — it's what generates the launchd plists and links skills into `~/.claude/skills/`.
-
-Click the menubar icon to open Dove.
+Open the URL printed by Next.js. Dove appears in the sidebar. The `hello-world` agent is already registered — send it a message to verify the stack is working.
 
 ---
 
-**Adding an agent:**
+## Adding an Agent
 
-DovePaw ships with a built-in skill `/sub-agent-builder` that scaffolds a new agent end-to-end from a single description. It generates the `agent.json`, `main.ts`, and plugin manifest — you describe what the agent should do, it wires the boilerplate. You write the logic.
+1. Create a directory under `agent-local/`:
 
-Once your plugin repo is ready:
-
-```bash
-npm run plugin:add owner/my-agents    # install plugin
-npm run install                        # regenerate plists and redeploy
-npm run electron:dev                   # restart to pick up new agents
+```
+agent-local/my-agent/
+  agent.json
+  main.ts
 ```
 
-Agent configs live in `~/.dovepaw/settings.agents/<name>/agent.json`. Plugin repos install into `~/.dovepaw/plugins/`. State and logs under `~/.dovepaw/agents/`.
+2. **`agent.json`** — minimal required fields:
 
-If something breaks: read the source, not the artifacts. The artifacts are generated.
+```json
+{
+  "version": 1,
+  "name": "my-agent",
+  "alias": "ma",
+  "displayName": "My Agent",
+  "description": "What this agent does — shown to Dove as the MCP tool description.",
+  "iconName": "Bot",
+  "schedulingEnabled": false,
+  "locked": false,
+  "doveCard": {
+    "title": "My Agent",
+    "description": "Short description for the Dove card grid",
+    "prompt": "What does My Agent do?"
+  },
+  "suggestions": [
+    {
+      "title": "Run it",
+      "description": "Trigger the agent",
+      "prompt": "Run my agent now"
+    }
+  ],
+  "repos": [],
+  "envVars": []
+}
+```
+
+3. **`main.ts`** — receives the user's instruction as `process.argv[2]`:
+
+```typescript
+import { createLogger } from "@dovepaw/agent-sdk";
+
+const log = createLogger("my-agent");
+const instruction = process.argv[2] ?? "no instruction";
+
+log.info(`Running with: ${instruction}`);
+// your logic here
+console.log("Done.");
+```
+
+4. Restart `npm run dev` — the agent appears in the Dove sidebar automatically.
+
+### Scheduling an agent
+
+Add a `schedule` field to `agent.json` and set `schedulingEnabled: true`:
+
+```json
+"schedulingEnabled": true,
+"schedule": { "type": "calendar", "hour": 9, "minute": 0 }
+```
+
+Then run `npm run install` to generate and activate the scheduler config. The agent will fire daily at 09:00 via launchd (macOS) or cron (Linux) using the A2A trigger script.
+
+### Environment variables
+
+Per-agent env vars are declared in `agent.json` under `envVars`:
+
+```json
+"envVars": [
+  { "key": "MY_API_KEY", "value": "" }
+]
+```
+
+Fill in values through the Settings UI (Settings → agent name → Env Vars tab). Values are stored in `~/.dovepaw/settings.agents/<name>/agent.json` outside the repo.
 
 ---
 
-## If You Find This Interesting
+## Configuration
 
-This is a personal project — built on nights and weekends, shaped by real problems I wanted to stop doing manually. Not a framework, not a product. Just something that works well for me.
+All runtime state lives outside the repo under `~/.dovepaw/` (override with `DOVEPAW_DATA_DIR` env var for server deployments):
 
-If it sparks ideas for your own setup, feel free to fork it and adapt it. The plugin system is designed for that — your agents, your repos, your rules.
+| Path | Contents |
+|---|---|
+| `~/.dovepaw/settings.json` | global settings: repositories, Dove persona, env vars |
+| `~/.dovepaw/settings.agents/<name>/agent.json` | per-agent repos, env vars, schedule |
+| `~/.dovepaw/workspaces/` | isolated execution workspace roots |
+| `~/.dovepaw/agents/state/` | persistent per-agent state |
+| `~/.dovepaw/agents/logs/` | per-agent log files |
+| `~/.dovepaw/cron/` | compiled scheduler scripts (generated by `npm run install`) |
 
-And if you find it useful, a ⭐ goes a long way. It tells me the time I put into this is worth continuing.
+### Server / ECS deployment
 
-Even if this ends up being useful only to a handful of engineers with the same lazy streak, that's enough.
+Set `S3_CONFIG_BUCKET` to enable S3 write-through for all JSON config writes. On container startup, pull config before starting the app:
+
+```bash
+aws s3 sync s3://$S3_CONFIG_BUCKET/ ${DOVEPAW_DATA_DIR:-~/.dovepaw}/
+npm run dev
+```
+
+---
+
+## What's Removed vs Full DovePaw
+
+| Feature | Full DovePaw | DovePaw Lite |
+|---|---|---|
+| Agent plugins (installable git repos) | ✓ | — |
+| Agent links (A→B invocation wiring) | ✓ | — |
+| Group chat / roundtable | ✓ | — |
+| Session history (SQLite) | ✓ | — (in-memory) |
+| About page | ✓ | — |
+| Electron menubar app | ✓ | — |
+| Scheduler (launchd / cron) | ✓ | ✓ |
+| A2A server layer | ✓ | ✓ |
+| Dove orchestrator chat UI | ✓ | ✓ |
+| `packages/agent-sdk` | ✓ | ✓ |
+| S3 config sync | ✓ | ✓ |
