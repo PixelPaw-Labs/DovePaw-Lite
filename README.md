@@ -1,6 +1,6 @@
-# DovePaw Lite
+# Dove
 
-A stripped-down version of [DovePaw](https://github.com/PixelPaw-Labs/DovePaw) — the core agent runtime without plugins, group chat, agent links, or Electron. One Dove chatbot, one A2A server layer, your agent scripts in `agent-local/`.
+An agent orchestration runtime. One Dove chatbot, one A2A server layer, your agent scripts in `agent-local/`.
 
 ---
 
@@ -30,7 +30,7 @@ Agent Scripts — TypeScript files in agent-local/<name>/main.ts
 
 | Decision | Reason |
 |---|---|
-| In-memory session store (`db-lite.ts`) | No SQLite dependency — sessions live only for the process lifetime |
+| In-memory session store | No SQLite dependency — sessions live only for the process lifetime |
 | `agent-local/` scanned at startup | Agent discovery is a directory scan — add a folder, restart, it appears |
 | OS-assigned A2A ports | No port conflicts, no config to maintain |
 | Platform-neutral scheduler abstraction | `lib/scheduler.ts` adapts to launchd (macOS) or cron (Linux) |
@@ -48,7 +48,7 @@ agent-local/              ← your agent scripts live here
 chatbot/
   app/                    ← Next.js pages and API routes
   a2a/                    ← A2A Express servers (one per agent)
-  lib/                    ← shared chatbot utilities, db-lite.ts, hooks
+  lib/                    ← shared chatbot utilities, session store, hooks
 
 lib/                      ← shared library: agents, scheduler, settings, paths
 packages/agent-sdk/       ← shared agent utilities (Claude/Codex runners, git, logger)
@@ -82,7 +82,7 @@ agent-local/my-agent/
   main.ts
 ```
 
-2. **`agent.json`** — minimal required fields:
+2. **`agent.json`** — required fields:
 
 ```json
 {
@@ -135,7 +135,7 @@ Add a `schedule` field to `agent.json` and set `schedulingEnabled: true`:
 "schedule": { "type": "calendar", "hour": 9, "minute": 0 }
 ```
 
-Then run `npm run install` to generate and activate the scheduler config. The agent will fire daily at 09:00 via launchd (macOS) or cron (Linux) using the A2A trigger script.
+Then run `npm run install` to generate and activate the scheduler config. The agent will fire daily at 09:00 via launchd (macOS) or cron (Linux).
 
 ### Environment variables
 
@@ -172,21 +172,3 @@ Set `S3_CONFIG_BUCKET` to enable S3 write-through for all JSON config writes. On
 aws s3 sync s3://$S3_CONFIG_BUCKET/ ${DOVEPAW_DATA_DIR:-~/.dovepaw}/
 npm run dev
 ```
-
----
-
-## What's Removed vs Full DovePaw
-
-| Feature | Full DovePaw | DovePaw Lite |
-|---|---|---|
-| Agent plugins (installable git repos) | ✓ | — |
-| Agent links (A→B invocation wiring) | ✓ | — |
-| Group chat / roundtable | ✓ | — |
-| Session history (SQLite) | ✓ | — (in-memory) |
-| About page | ✓ | — |
-| Electron menubar app | ✓ | — |
-| Scheduler (launchd / cron) | ✓ | ✓ |
-| A2A server layer | ✓ | ✓ |
-| Dove orchestrator chat UI | ✓ | ✓ |
-| `packages/agent-sdk` | ✓ | ✓ |
-| S3 config sync | ✓ | ✓ |
