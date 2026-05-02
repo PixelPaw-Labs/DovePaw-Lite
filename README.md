@@ -1,6 +1,6 @@
-# DavePaw
+# DovePaw
 
-An agent orchestration runtime. One Dove chatbot, one A2A server layer, your agent scripts in `agent-local/`.
+Multi-agent orchestration runtime built on the [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk). Drop TypeScript agent scripts into `agent-local/`, run `npm run dev`, and a Dove chatbot immediately surfaces them as conversational tools — no config, no hardcoded ports. Schedule agents via macOS launchd or Linux cron, or deploy to ECS with S3-backed config.
 
 ---
 
@@ -210,3 +210,12 @@ npm run dev
 | `DOVEPAW_DATA_DIR` | Optional | Override data dir (default: `~/.dovepaw-lite/`) |
 | `AWS_REGION` | When S3 used | AWS region for the S3 client |
 | `ANTHROPIC_API_KEY` | Required | Claude API key (or use Claude Code CLI auth) |
+
+---
+
+## Contributing
+
+1. Fork the repo and create a branch from `main`.
+2. Add or update tests for any changed behaviour.
+3. Run `npm run lint && npm test` and ensure both pass.
+4. Open a pull request — describe what changed and why.
