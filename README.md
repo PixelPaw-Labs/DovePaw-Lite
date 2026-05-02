@@ -1,4 +1,4 @@
-# Dove
+# DavePaw
 
 An agent orchestration runtime. One Dove chatbot, one A2A server layer, your agent scripts in `agent-local/`.
 
