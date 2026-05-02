@@ -6,14 +6,6 @@ export type { SessionMessage };
 
 export type SessionStatus = "running" | "done" | "cancelled";
 
-export interface SessionInfo {
-  id: string;
-  agentId: string;
-  startedAt: string;
-  label: string;
-  status: SessionStatus;
-}
-
 export interface SessionDetail {
   id: string;
   agentId: string;
@@ -117,10 +109,6 @@ export function closeStaleSessions(): void {}
 
 export function getSessionResumable(_id: string, _agentId: string): SessionResumable | null {
   return null;
-}
-
-export function listSessions(_agentId: string): SessionInfo[] {
-  return [];
 }
 
 export function getSessionDetail(id: string): SessionDetail | null {
