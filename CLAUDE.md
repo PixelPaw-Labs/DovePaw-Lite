@@ -26,7 +26,7 @@ Each agent exposes three MCP tools to the chatbot layer:
 
 ## Plugin System
 
-Agents are packaged as **plugin repos** — ordinary git repositories that contain a `dovepaw-plugin.json` manifest and one or more agent scripts. Plugins are installed via the CLI or the chatbot Settings UI. DovePaw clones the repo into `~/.dovepaw/plugins/`, reads the manifest, and writes per-agent config into `~/.dovepaw/settings.agents/`.
+Agents are packaged as **plugin repos** — ordinary git repositories that contain a `dovepaw-plugin.json` manifest and one or more agent scripts. Plugins are installed via the CLI or the chatbot Settings UI. DovePaw clones the repo into `~/.dovepaw-lite/plugins/`, reads the manifest, and writes per-agent config into `~/.dovepaw-lite/settings.agents/`.
 
 ```
 Plugin repo (e.g. owner/my-agents)
@@ -36,13 +36,13 @@ Plugin repo (e.g. owner/my-agents)
     main.ts                 — agent entry point
 ```
 
-`agents/` in the DovePaw repo root is a symlink to `~/.dovepaw/plugins/`, so every installed plugin's agents are visible to the build and A2A servers without any manual wiring.
+`agents/` in the DovePaw repo root is a symlink to `~/.dovepaw-lite/plugins/`, so every installed plugin's agents are visible to the build and A2A servers without any manual wiring.
 
 ## Key Concepts
 
 **Dynamic agent registry.** The set of agents is determined at runtime by which plugins are installed, not hardcoded in DovePaw. The registry builds `AgentDef` objects from per-agent config files at startup.
 
-**Dynamic ports.** A2A servers bind to OS-assigned ports at startup and publish a port manifest to `~/.dovepaw/`. The chatbot polls this manifest to discover server addresses — no hardcoded ports anywhere.
+**Dynamic ports.** A2A servers bind to OS-assigned ports at startup and publish a port manifest to `~/.dovepaw-lite/`. The chatbot polls this manifest to discover server addresses — no hardcoded ports anywhere.
 
 **MCP tool naming.** Each agent's MCP tool name is derived as `yolo_<agent_name_with_underscores>` from the agent's kebab-case name in its `agent.json`.
 
@@ -50,7 +50,7 @@ Plugin repo (e.g. owner/my-agents)
 
 **Environment isolation.** Agent processes run with a sanitised environment (clean PATH, `CLAUDECODE` unset) so nested Claude CLI invocations work correctly. Per-agent secrets are injected at daemon install time from settings.
 
-**User data directory.** All runtime state lives outside the repo under `~/.dovepaw/`:
+**User data directory.** All runtime state lives outside the repo under `~/.dovepaw-lite/`:
 - `plugins/` — installed plugin repos
 - `plugins.json` — plugin registry
 - `settings.json` — global settings (repositories, API keys)

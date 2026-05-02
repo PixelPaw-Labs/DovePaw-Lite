@@ -4,7 +4,7 @@
 
 ## agent.json Template
 
-Write to `~/.dovepaw/tmp/<name>/agent.json`. Do NOT include `pluginPath` — it is added at publish time.
+Write to `~/.dovepaw-lite/tmp/<name>/agent.json`. Do NOT include `pluginPath` — it is added at publish time.
 
 ```json
 {
@@ -67,7 +67,7 @@ Calendar (weekday is optional — 1=Mon … 7=Sun; omit for daily):
 
 ### repos field
 
-UUID strings from `~/.dovepaw/settings.json`. Match user's selected repo paths to their `id` fields.
+UUID strings from `~/.dovepaw-lite/settings.json`. Match user's selected repo paths to their `id` fields.
 
 ### envVars field
 

@@ -3,7 +3,7 @@
  * PUT    /api/settings/agent-config-files — create or update a config file
  * DELETE /api/settings/agent-config-files — delete a config file
  *
- * Files are stored at ~/.dovepaw/agents/config/<agentName>/<filename>.
+ * Files are stored at ~/.dovepaw-lite/agents/config/<agentName>/<filename>.
  * Only .json filenames matching [a-zA-Z0-9][a-zA-Z0-9_\-]*.json are accepted.
  */
 

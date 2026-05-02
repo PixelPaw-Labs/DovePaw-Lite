@@ -152,7 +152,7 @@ export type AgentsConfig = z.infer<typeof agentsConfigSchema>;
 // ─── Combined per-agent file (definition + runtime settings) ─────────────────
 
 /**
- * The shape of ~/.dovepaw/settings.agents/<name>/agent.json.
+ * The shape of ~/.dovepaw-lite/settings.agents/<name>/agent.json.
  * Merges the full agent definition with per-agent runtime settings (repos + envVars).
  * String fields are intentionally permissive (no min(1)) so skeletal files
  * (created before the definition is fully filled in) still parse correctly.

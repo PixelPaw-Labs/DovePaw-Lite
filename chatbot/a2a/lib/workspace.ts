@@ -19,7 +19,7 @@ export interface AgentWorkspace {
  *
  * @param agentName     kebab-case agent name, e.g. "get-shit-done" — used for the parent dir
  * @param alias         short alias, e.g. "gsd" — used as the workspace folder prefix
- * @param workspaceRoot optional override; defaults to ~/.dovepaw/workspaces/.{agentName}
+ * @param workspaceRoot optional override; defaults to ~/.dovepaw-lite/workspaces/.{agentName}
  */
 export function createAgentWorkspace(
   agentName: string,

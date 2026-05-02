@@ -47,7 +47,7 @@ const execAsync = promisify(exec);
 /** Deduplicates concurrent deployTriggerScript calls; reset after each run so the next install re-deploys. */
 let _deployTriggerScriptOnce: Promise<void> | null = null;
 
-/** Copy compiled .mjs to ~/.dovepaw/cron and make it executable.
+/** Copy compiled .mjs to ~/.dovepaw-lite/cron and make it executable.
  *  Triggers a full build first if the compiled output is missing. */
 export async function deployAgentScript(agentName: string): Promise<void> {
   await mkdir(SCHEDULER_ROOT, { recursive: true });
@@ -61,7 +61,7 @@ export async function deployAgentScript(agentName: string): Promise<void> {
   await chmod(schedulerScript(agentName), 0o755);
 }
 
-/** Copy compiled a2a-trigger.mjs to ~/.dovepaw/cron and make it executable.
+/** Copy compiled a2a-trigger.mjs to ~/.dovepaw-lite/cron and make it executable.
  *  Concurrent calls share one run; the promise is cleared after each run. */
 export async function deployTriggerScript(): Promise<void> {
   _deployTriggerScriptOnce ??= _doDeployTriggerScript().finally(() => {
@@ -84,7 +84,7 @@ async function _doDeployTriggerScript(): Promise<void> {
 }
 
 /**
- * Copy native addon packages from DovePaw/node_modules into ~/.dovepaw/cron/node_modules.
+ * Copy native addon packages from DovePaw/node_modules into ~/.dovepaw-lite/cron/node_modules.
  */
 export async function copyNativePackages(packages: string[]): Promise<void> {
   await Promise.all(
@@ -103,20 +103,20 @@ export async function copyNativePackages(packages: string[]): Promise<void> {
 }
 
 /**
- * Copy packages/agent-sdk/ to ~/.dovepaw/sdk/ so plugin repos can reference it
+ * Copy packages/agent-sdk/ to ~/.dovepaw-lite/sdk/ so plugin repos can reference it
  * as a file: dependency and tsup can bundle it.
  */
 export async function deployAgentSdk(): Promise<void> {
   await rm(AGENT_SDK_DIR, { recursive: true, force: true });
   await cp(AGENT_SDK_SRC, AGENT_SDK_DIR, { recursive: true });
-  // Symlink SDK peer deps into ~/.dovepaw/sdk/node_modules/ so Node.js resolves
+  // Symlink SDK peer deps into ~/.dovepaw-lite/sdk/node_modules/ so Node.js resolves
   // them from the real file path (not the symlinked plugin path).
   const sdkNmScope = join(AGENT_SDK_DIR, "node_modules", "@openai");
   await mkdir(sdkNmScope, { recursive: true });
   const codexSdkLink = join(sdkNmScope, "codex-sdk");
   await rm(codexSdkLink, { recursive: true, force: true });
   await symlink(agentNodeModule("@openai/codex-sdk"), codexSdkLink);
-  // Ensure ~/.dovepaw/tmp/ is treated as ESM so tsx loads tmp agent scripts
+  // Ensure ~/.dovepaw-lite/tmp/ is treated as ESM so tsx loads tmp agent scripts
   // in ESM mode. Without this, Node.js defaults to CJS and require()ing the
   // ESM-only @openai/codex-sdk (transitively via the SDK index) fails with
   // ERR_PACKAGE_PATH_NOT_EXPORTED.
@@ -125,7 +125,7 @@ export async function deployAgentSdk(): Promise<void> {
 }
 
 /**
- * Create <pluginDir>/node_modules/@dovepaw/agent-sdk → ~/.dovepaw/sdk symlink
+ * Create <pluginDir>/node_modules/@dovepaw/agent-sdk → ~/.dovepaw-lite/sdk symlink
  * so plugin agents resolve @dovepaw/agent-sdk at both tsx runtime and tsup bundle time.
  */
 export async function linkAgentSdkToPlugin(pluginDir: string): Promise<void> {
@@ -136,7 +136,7 @@ export async function linkAgentSdkToPlugin(pluginDir: string): Promise<void> {
   await symlink(AGENT_SDK_DIR, link);
 }
 
-/** Ensure DovePaw/agents -> ~/.dovepaw/plugins symlink exists. */
+/** Ensure DovePaw/agents -> ~/.dovepaw-lite/plugins symlink exists. */
 export async function linkAgents(): Promise<void> {
   await mkdir(PLUGINS_DIR, { recursive: true });
   const link = join(AGENTS_ROOT, "agents");

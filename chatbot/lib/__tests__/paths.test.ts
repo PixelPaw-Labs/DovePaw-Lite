@@ -15,7 +15,7 @@ describe("paths", () => {
   });
 
   it.skipIf(!existsSync(resolve(AGENTS_ROOT, "agents")))(
-    "AGENTS_ROOT contains the agents/ directory (requires ~/.dovepaw/plugins setup)",
+    "AGENTS_ROOT contains the agents/ directory (requires ~/.dovepaw-lite/plugins setup)",
     () => {
       expect(existsSync(resolve(AGENTS_ROOT, "agents"))).toBe(true);
     },
@@ -25,7 +25,7 @@ describe("paths", () => {
     expect(TSX_BIN).toContain("tsx");
   });
 
-  it("PORTS_FILE is inside ~/.dovepaw/ and follows .ports.<port>.json naming", () => {
+  it("PORTS_FILE is inside ~/.dovepaw-lite/ and follows .ports.<port>.json naming", () => {
     expect(PORTS_FILE).toContain(".dovepaw-lite");
     expect(basename(PORTS_FILE)).toMatch(/^\.ports\.\d+\.json$/);
   });

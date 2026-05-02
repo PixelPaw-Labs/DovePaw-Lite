@@ -16,10 +16,10 @@ The agent is now visible in the **Kiln** sidebar group (Sparkles icon). Tmp agen
 
 | Path                               | Purpose                                                              |
 | ---------------------------------- | -------------------------------------------------------------------- |
-| `~/.dovepaw/tmp/<name>/main.ts`    | Agent entry point (tmp draft)                                        |
-| `~/.dovepaw/tmp/<name>/agent.json` | Agent metadata (tmp draft) — `tmpAgentDefinitionFile(name)`          |
-| `~/.dovepaw/agents/logs/.<name>/`  | Persistent log dir (`agentPersistentLogDir(name)`)                   |
-| `~/.dovepaw/agents/state/.<name>/` | Persistent state dir — Type 3 only (`agentPersistentStateDir(name)`) |
+| `~/.dovepaw-lite/tmp/<name>/main.ts`    | Agent entry point (tmp draft)                                        |
+| `~/.dovepaw-lite/tmp/<name>/agent.json` | Agent metadata (tmp draft) — `tmpAgentDefinitionFile(name)`          |
+| `~/.dovepaw-lite/agents/logs/.<name>/`  | Persistent log dir (`agentPersistentLogDir(name)`)                   |
+| `~/.dovepaw-lite/agents/state/.<name>/` | Persistent state dir — Type 3 only (`agentPersistentStateDir(name)`) |
 
 ## After Publishing to Plugin Repo
 

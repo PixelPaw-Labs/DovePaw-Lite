@@ -106,9 +106,9 @@ describe("buildAgentDef — pluginPath", () => {
   it("propagates pluginPath when set", () => {
     const def = buildAgentDef({
       ...BASE_ENTRY,
-      pluginPath: "/home/user/.dovepaw/plugins/my-plugin",
+      pluginPath: "/home/user/.dovepaw-lite/plugins/my-plugin",
     });
-    expect(def.pluginPath).toBe("/home/user/.dovepaw/plugins/my-plugin");
+    expect(def.pluginPath).toBe("/home/user/.dovepaw-lite/plugins/my-plugin");
   });
 
   it("leaves pluginPath undefined when absent", () => {

@@ -38,9 +38,9 @@ import {
 const INSTRUCTION = process.argv[2] || "";
 const WORK_DIR = process.env.AGENT_WORKSPACE!; // always set by executor — never add a fallback
 const STATE_DIR = agentPersistentStateDir("{{AGENT_NAME}}");
-// → ~/.dovepaw/agents/state/.{{AGENT_NAME}}/
+// → ~/.dovepaw-lite/agents/state/.{{AGENT_NAME}}/
 const LOG_BASE = agentPersistentLogDir("{{AGENT_NAME}}");
-// → ~/.dovepaw/agents/logs/.{{AGENT_NAME}}/
+// → ~/.dovepaw-lite/agents/logs/.{{AGENT_NAME}}/
 
 mkdirSync(STATE_DIR, { recursive: true });
 

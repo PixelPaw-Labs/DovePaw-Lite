@@ -312,7 +312,7 @@ describe("agentSourceDirFromEntry", () => {
   });
 
   it("resolves against a custom scriptRoot (plugin path)", () => {
-    const pluginRoot = "/home/user/.dovepaw/plugins/my-plugin";
+    const pluginRoot = "/home/user/.dovepaw-lite/plugins/my-plugin";
     const result = agentSourceDirFromEntry("agents/my-agent/main.ts", pluginRoot);
     expect(result).toBe(join(pluginRoot, "agents", "my-agent"));
   });

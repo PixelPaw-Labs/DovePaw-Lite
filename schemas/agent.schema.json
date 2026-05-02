@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "agent.schema.json",
   "title": "DovePaw Agent Definition",
-  "description": "Schema for agent.json — the metadata file that defines a DovePaw agent inside a plugin repo (agents/<name>/agent.json). When installed, DovePaw merges this file into ~/.dovepaw/settings.agents/<name>/agent.json, adding runtime fields (repos, envVars, locked). To create a new agent, produce a valid agent.json that satisfies this schema, then pair it with a main.ts entry point and register the agent name in dovepaw-plugin.json.",
+  "description": "Schema for agent.json — the metadata file that defines a DovePaw agent inside a plugin repo (agents/<name>/agent.json). When installed, DovePaw merges this file into ~/.dovepaw-lite/settings.agents/<name>/agent.json, adding runtime fields (repos, envVars, locked). To create a new agent, produce a valid agent.json that satisfies this schema, then pair it with a main.ts entry point and register the agent name in dovepaw-plugin.json.",
   "type": "object",
   "required": ["version", "name", "alias", "displayName", "description", "doveCard", "suggestions"],
   "additionalProperties": false,
@@ -13,7 +13,7 @@
     },
 
     "name": {
-      "description": "Unique kebab-case identifier for this agent. Used as the directory name inside agents/, as the key in ~/.dovepaw/settings.agents/, and as the basis for the MCP tool name (yolo_<name_with_underscores>). Must start with a lowercase letter and contain only lowercase letters, digits, and hyphens.",
+      "description": "Unique kebab-case identifier for this agent. Used as the directory name inside agents/, as the key in ~/.dovepaw-lite/settings.agents/, and as the basis for the MCP tool name (yolo_<name_with_underscores>). Must start with a lowercase letter and contain only lowercase letters, digits, and hyphens.",
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$",
       "examples": ["memory-dream", "get-shit-done", "code-reviewer"]

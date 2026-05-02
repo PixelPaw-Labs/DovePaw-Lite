@@ -6,7 +6,7 @@ const DEF = {
   displayName: "My Agent",
   description: "Does things",
   entryPath: "agents/my-agent/main.ts",
-  pluginPath: "/home/user/.dovepaw/plugins/my-plugin",
+  pluginPath: "/home/user/.dovepaw-lite/plugins/my-plugin",
 } as unknown as AgentDef;
 
 const CWD = "/tmp/workspace/my-agent";
@@ -20,7 +20,7 @@ describe("buildAgentConfig", () => {
 
   it("builds scriptPath from pluginPath + entryPath", () => {
     const config = buildAgentConfig(DEF, CWD, {}, []);
-    expect(config.scriptPath).toBe("/home/user/.dovepaw/plugins/my-plugin/agents/my-agent/main.ts");
+    expect(config.scriptPath).toBe("/home/user/.dovepaw-lite/plugins/my-plugin/agents/my-agent/main.ts");
   });
 
   it("sets agentName and whatItDoes from def", () => {

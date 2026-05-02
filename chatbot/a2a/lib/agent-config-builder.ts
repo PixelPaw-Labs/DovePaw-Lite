@@ -27,7 +27,7 @@ export interface AgentConfig {
  * Merges workspace-specific env vars (AGENT_WORKSPACE, REPO_LIST) on top of
  * the pre-resolved extraEnv. For plugin agents, scriptPath is resolved from
  * pluginPath + entryPath. For tmp agents (no pluginPath), it falls back to
- * ~/.dovepaw/tmp/<name>/main.ts.
+ * ~/.dovepaw-lite/tmp/<name>/main.ts.
  */
 export function buildAgentConfig(
   def: AgentDef,

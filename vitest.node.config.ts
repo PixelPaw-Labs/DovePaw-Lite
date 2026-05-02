@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 const root = import.meta.dirname;
 const agentsRoot = resolve(root, "agents");
 
-// `agents/` is a symlink to `~/.dovepaw/plugins/` created by `npm run install`.
+// `agents/` is a symlink to `~/.dovepaw-lite/plugins/` created by `npm run install`.
 // Include plugin-repo tests only when the symlink resolves to a live directory
 // — otherwise vitest would error on a dangling glob root. On a fresh worktree
 // or after uninstalling every plugin, agents/ may not exist at all; the guard

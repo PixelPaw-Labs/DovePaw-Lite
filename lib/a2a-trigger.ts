@@ -3,7 +3,7 @@
  *
  * Usage: a2a-trigger.mjs <manifestKey> <agentName> [jobId]
  *
- * Reads ~/.dovepaw/.ports.<port>.json to find the agent's port, sends a blocking
+ * Reads ~/.dovepaw-lite/.ports.<port>.json to find the agent's port, sends a blocking
  * message via the A2A ClientFactory, and exits when the task reaches a
  * terminal state.
  *

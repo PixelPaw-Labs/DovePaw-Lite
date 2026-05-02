@@ -48,15 +48,15 @@ vi.mock("@@/lib/agents-config", () => ({
 // ─── Mock paths ───────────────────────────────────────────────────────────────
 
 vi.mock("@@/lib/paths", () => ({
-  agentConfigDir: (agentName: string) => `/home/.dovepaw/settings.agents/${agentName}`,
+  agentConfigDir: (agentName: string) => `/home/.dovepaw-lite/settings.agents/${agentName}`,
   agentConfigFile: (agentName: string, filename: string) =>
-    `/home/.dovepaw/settings.agents/${agentName}/${filename}`,
+    `/home/.dovepaw-lite/settings.agents/${agentName}/${filename}`,
 }));
 
 import { GET, PUT, DELETE } from "../settings/agent-config-files/route";
 
 const AGENT = "zendesk-triager";
-const DIR = `/home/.dovepaw/settings.agents/${AGENT}`;
+const DIR = `/home/.dovepaw-lite/settings.agents/${AGENT}`;
 
 function makeGet(agentName?: string) {
   const url = agentName

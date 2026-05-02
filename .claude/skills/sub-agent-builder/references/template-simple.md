@@ -1,6 +1,6 @@
 # Type 1 — Simple Agent Template
 
-Substitute all `{{PLACEHOLDER}}` values before writing to `~/.dovepaw/tmp/<name>/main.ts`.
+Substitute all `{{PLACEHOLDER}}` values before writing to `~/.dovepaw-lite/tmp/<name>/main.ts`.
 
 ## Placeholders
 

@@ -1,7 +1,7 @@
 /**
  * Central icon registry for agent icons.
  * Stores icon names as strings (safe for JSON) and resolves them to LucideIcon components at runtime.
- * No hardcoded per-agent mappings — all icon choices live in ~/.dovepaw/agents.json.
+ * No hardcoded per-agent mappings — all icon choices live in ~/.dovepaw-lite/agents.json.
  */
 import type { LucideIcon } from "lucide-react";
 import {

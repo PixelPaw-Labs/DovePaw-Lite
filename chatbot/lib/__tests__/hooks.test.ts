@@ -337,7 +337,7 @@ describe("buildAgentHooks — UserPromptSubmit hook", () => {
 
 describe("buildDoveHooks — PreToolUse allowed directories", () => {
   const cwd = "/repo/dovepaw";
-  const tmpDir = "/home/user/.dovepaw/tmp";
+  const tmpDir = "/home/user/.dovepaw-lite/tmp";
 
   function getPreToolUseHook() {
     const hooks = buildDoveHooks([], new PendingRegistry(), cwd, [tmpDir]);

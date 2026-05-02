@@ -16,7 +16,7 @@ hooks:
 
 ## System Requirements
 
-- Read `~/.dovepaw/settings.json` to discover configured repositories before Round 2 questions
+- Read `~/.dovepaw-lite/settings.json` to discover configured repositories before Round 2 questions
 
 ---
 
@@ -33,7 +33,7 @@ hooks:
    - **Dynamic Skill** — `main.ts` pre-fetches runtime data (PR branches, CI failures, API status), injects it into a temporary skill built in memory, runs Claude, then deletes the skill dir. **Only use when the pre-fetched data must be structurally embedded in the skill body** — not merely for passing the user's instruction through (Static Skill handles that cleanly).
    - **Stateful** — lock + state dir + orchestration (for scheduled agents requiring mutual exclusion)
 
-**Round 2** — read `~/.dovepaw/settings.json`, extract `repositories` array (each has `id`, `path`), then ask 3 questions in a single `AskUserQuestion` call:
+**Round 2** — read `~/.dovepaw-lite/settings.json`, extract `repositories` array (each has `id`, `path`), then ask 3 questions in a single `AskUserQuestion` call:
 
 1. **Schedule** — "Enable scheduled runs?" — options:
    - On-demand only (Recommended) — triggered manually from chatbot

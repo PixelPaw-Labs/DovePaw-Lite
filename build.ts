@@ -44,7 +44,7 @@ console.log("\nStep 2: Linking agents, skills, and deploying SDK...\n");
 await linkAgents();
 await deployAgentSdk();
 await linkLocalAgentSkills();
-console.log(`  SDK deployed to ~/.dovepaw/sdk`);
+console.log(`  SDK deployed to ~/.dovepaw-lite/sdk`);
 
 if (process.platform === "win32") {
   console.log("\nStep 3: Skipped (unsupported platform).");

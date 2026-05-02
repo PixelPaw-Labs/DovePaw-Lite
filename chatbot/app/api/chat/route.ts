@@ -1,7 +1,7 @@
 /**
  * Chat API route — Dove (Claude Agent SDK) → ask/start/await tools → A2A server → query() sub-agent.
  *
- * Ports are read from ~/.dovepaw/.ports.json written by `npm run servers`.
+ * Ports are read from ~/.dovepaw-lite/.ports.json written by `npm run servers`.
  * If the manifest is absent or stale the tools return a helpful message.
  *
  * Flow:

@@ -17,8 +17,8 @@ describe("paths", () => {
     expect(AGENTS_ROOT).not.toMatch(/Envato\/others$/);
   });
 
-  it("DOVEPAW_AGENT_STATE is under ~/.dovepaw/agents/state", () => {
-    expect(DOVEPAW_AGENT_STATE).toBe(join(process.env.HOME!, ".dovepaw/agents/state"));
+  it("DOVEPAW_AGENT_STATE is under DOVEPAW_DIR/agents/state", () => {
+    expect(DOVEPAW_AGENT_STATE).toBe(join(DOVEPAW_DIR, "agents/state"));
   });
 
   it("agentPersistentStateDir returns dotted subdir under DOVEPAW_AGENT_STATE", () => {
@@ -31,8 +31,8 @@ describe("paths", () => {
     expect(agentPersistentStateDir("my-agent")).toMatch(/\/\.my-agent$/);
   });
 
-  it("DOVEPAW_AGENT_LOGS is under ~/.dovepaw/agents/logs", () => {
-    expect(DOVEPAW_AGENT_LOGS).toBe(join(process.env.HOME!, ".dovepaw/agents/logs"));
+  it("DOVEPAW_AGENT_LOGS is under DOVEPAW_DIR/agents/logs", () => {
+    expect(DOVEPAW_AGENT_LOGS).toBe(join(DOVEPAW_DIR, "agents/logs"));
   });
 
   it("agentPersistentLogDir returns dotted subdir under DOVEPAW_AGENT_LOGS", () => {
@@ -43,7 +43,7 @@ describe("paths", () => {
     expect(agentPersistentLogDir("my-agent")).toMatch(/\/\.my-agent$/);
   });
 
-  it("SCHEDULER_ROOT is under ~/.dovepaw/cron", () => {
+  it("SCHEDULER_ROOT is under ~/.dovepaw-lite/cron", () => {
     expect(SCHEDULER_ROOT).toBe(join(DOVEPAW_DIR, "cron"));
   });
 });
