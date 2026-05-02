@@ -7,7 +7,7 @@ import {
 } from "./paths.js";
 
 const HOME = process.env.HOME!;
-const DOVEPAW = join(HOME, ".dovepaw");
+const DOVEPAW = join(HOME, ".dovepaw-lite");
 
 describe("agentPersistentLogDir", () => {
   it("returns the correct log directory path", () => {

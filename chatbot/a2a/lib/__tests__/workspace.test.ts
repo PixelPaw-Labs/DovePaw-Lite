@@ -6,24 +6,24 @@ const TMP_ROOT = `/tmp/workspace-test-${process.pid}`;
 
 vi.mock("@@/lib/paths", () => ({
   AGENTS_ROOT: TMP_ROOT,
-  DOVEPAW_DIR: join(TMP_ROOT, ".dovepaw"),
-  WORKSPACES_DIR: join(TMP_ROOT, ".dovepaw", "workspaces"),
+  DOVEPAW_DIR: join(TMP_ROOT, ".dovepaw-lite"),
+  WORKSPACES_DIR: join(TMP_ROOT, ".dovepaw-lite", "workspaces"),
   KARPATHY_HOOK_SRC: join(TMP_ROOT, ".claude/hooks/karpathy-guidelines.sh"),
   agentWorkspaceDir: (agentName: string) =>
-    join(TMP_ROOT, ".dovepaw", "workspaces", `.${agentName}`),
+    join(TMP_ROOT, ".dovepaw-lite", "workspaces", `.${agentName}`),
   agentWorkspacePath: (
     agentName: string,
     alias: string,
     shortId: string,
     workspaceRoot?: string,
   ) => {
-    const root = workspaceRoot ?? join(TMP_ROOT, ".dovepaw", "workspaces", `.${agentName}`);
+    const root = workspaceRoot ?? join(TMP_ROOT, ".dovepaw-lite", "workspaces", `.${agentName}`);
     const path = join(root, `${alias}-${shortId}`);
     mkdirSync(path, { recursive: true });
     return path;
   },
   agentConfigDir: (agentName: string) => {
-    const dir = join(TMP_ROOT, ".dovepaw", "settings.agents", agentName);
+    const dir = join(TMP_ROOT, ".dovepaw-lite", "settings.agents", agentName);
     mkdirSync(dir, { recursive: true });
     return dir;
   },
@@ -46,7 +46,7 @@ describe("createAgentWorkspace", () => {
     const ws = createAgentWorkspace("my-agent", "ma");
 
     expect(existsSync(ws.path)).toBe(true);
-    expect(ws.path.startsWith(join(TMP_ROOT, ".dovepaw", "workspaces", ".my-agent"))).toBe(true);
+    expect(ws.path.startsWith(join(TMP_ROOT, ".dovepaw-lite", "workspaces", ".my-agent"))).toBe(true);
   });
 
   it("workspace folder name is {alias}-{shortId}", () => {
@@ -148,7 +148,7 @@ describe("createAgentWorkspace", () => {
 
     it("removes the empty parent dir when it is the last workspace", () => {
       const ws = createAgentWorkspace("my-agent", "ma");
-      const parentDir = join(TMP_ROOT, ".dovepaw", "workspaces", ".my-agent");
+      const parentDir = join(TMP_ROOT, ".dovepaw-lite", "workspaces", ".my-agent");
 
       ws.cleanup();
 
@@ -159,7 +159,7 @@ describe("createAgentWorkspace", () => {
     it("leaves the parent dir when sibling workspaces still exist", () => {
       const ws1 = createAgentWorkspace("my-agent", "ma");
       const ws2 = createAgentWorkspace("my-agent", "ma");
-      const parentDir = join(TMP_ROOT, ".dovepaw", "workspaces", ".my-agent");
+      const parentDir = join(TMP_ROOT, ".dovepaw-lite", "workspaces", ".my-agent");
 
       ws1.cleanup();
 

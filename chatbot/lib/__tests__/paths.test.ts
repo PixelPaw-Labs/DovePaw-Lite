@@ -26,7 +26,7 @@ describe("paths", () => {
   });
 
   it("PORTS_FILE is inside ~/.dovepaw/ and follows .ports.<port>.json naming", () => {
-    expect(PORTS_FILE).toContain(".dovepaw");
+    expect(PORTS_FILE).toContain(".dovepaw-lite");
     expect(basename(PORTS_FILE)).toMatch(/^\.ports\.\d+\.json$/);
   });
 });
