@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsup --metafile",
+    "build": "tsup --metafile && tsx scripts/deploy-sdk.ts",
+    "deploy-sdk": "tsx scripts/deploy-sdk.ts",
     "lint": "oxlint --disable-nested-config --ignore-pattern agents/",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
@@ -20,7 +21,7 @@
     "plugin:update": "tsx scripts/plugin.ts update",
     "plugin:sync": "tsx scripts/plugin.ts sync",
     "plugin:list": "tsx scripts/plugin.ts list",
-    "dev": "tsx scripts/chatbot-start.ts"
+    "dev": "tsx scripts/deploy-sdk.ts && tsx scripts/chatbot-start.ts"
   },
   "dependencies": {
     "@a2a-js/sdk": "latest",

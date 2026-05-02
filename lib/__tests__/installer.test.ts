@@ -114,6 +114,34 @@ describe("linkLocalAgentSkills", () => {
   });
 });
 
+describe("linkAgentSdkToAgentLocal", () => {
+  let linkAgentSdkToAgentLocal: () => Promise<void>;
+  let symlinkMock: ReturnType<typeof vi.fn>;
+  let rmMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.resetModules();
+    const mod = await import("../installer.js");
+    linkAgentSdkToAgentLocal = mod.linkAgentSdkToAgentLocal;
+    const fs = await import("node:fs/promises");
+    symlinkMock = vi.mocked(fs.symlink);
+    rmMock = vi.mocked(fs.rm);
+  });
+
+  it("symlinks AGENT_SDK_DIR into agent-local/node_modules/@dovepaw/agent-sdk", async () => {
+    await linkAgentSdkToAgentLocal();
+    const dests = symlinkMock.mock.calls.map((args) => String(args[1]));
+    expect(dests.some((d) => d.includes("agent-local") && d.endsWith("agent-sdk"))).toBe(true);
+  });
+
+  it("removes existing link before symlinking", async () => {
+    await linkAgentSdkToAgentLocal();
+    const rmPaths = rmMock.mock.calls.map((args) => String(args[0]));
+    expect(rmPaths.some((p) => p.includes("agent-local") && p.endsWith("agent-sdk"))).toBe(true);
+  });
+});
+
 describe("deployTriggerScript", () => {
   let deployTriggerScript: () => Promise<void>;
 

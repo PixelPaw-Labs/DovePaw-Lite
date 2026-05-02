@@ -149,6 +149,18 @@ export async function getAgentLogs(agent: AgentDef, lines = 100): Promise<string
   return `${logFiles[0].name} (last ${lines} lines):\n\n${all.slice(-lines).join("\n")}`;
 }
 
+/**
+ * Symlink AGENT_SDK_DIR into agent-local/node_modules/@dovepaw/agent-sdk so that
+ * tsx can resolve @dovepaw/agent-sdk when running scripts from agent-local/.
+ */
+export async function linkAgentSdkToAgentLocal(): Promise<void> {
+  const nmScope = join(AGENT_LOCAL_DIR, "node_modules", "@dovepaw");
+  await mkdir(nmScope, { recursive: true });
+  const link = join(nmScope, "agent-sdk");
+  await rm(link, { recursive: true, force: true });
+  await symlink(AGENT_SDK_DIR, link);
+}
+
 /** Symlink skills from agent-local/<name>/skill/ into ~/.claude/skills/ and ~/.codex/skills/. */
 export async function linkLocalAgentSkills(): Promise<void> {
   let entries;

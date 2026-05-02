@@ -11,7 +11,12 @@
 import { execSync } from "node:child_process";
 import { agents } from "./scheduler-config/configs.js";
 import { SCHEDULER_ROOT } from "./lib/paths.js";
-import { copyNativePackages, deployAgentSdk, linkLocalAgentSkills } from "./lib/installer.js";
+import {
+  copyNativePackages,
+  deployAgentSdk,
+  linkAgentSdkToAgentLocal,
+  linkLocalAgentSkills,
+} from "./lib/installer.js";
 import { scheduler } from "./lib/scheduler.js";
 
 const NATIVE_PACKAGES = ["@ladybugdb/core"];
@@ -37,6 +42,7 @@ execSync("npx tsup", { stdio: "inherit", cwd: import.meta.dirname });
 
 console.log("\nStep 2: Linking skills and deploying SDK...\n");
 await deployAgentSdk();
+await linkAgentSdkToAgentLocal();
 await linkLocalAgentSkills();
 console.log(`  SDK deployed to ~/.dovepaw-lite/sdk`);
 

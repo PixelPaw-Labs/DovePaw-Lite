@@ -1,5 +1,11 @@
 #!/usr/bin/env tsx
-import { deployAgentSdk } from "../lib/installer.js";
+import {
+  deployAgentSdk,
+  linkAgentSdkToAgentLocal,
+  linkLocalAgentSkills,
+} from "../lib/installer.js";
 
 await deployAgentSdk();
+await linkAgentSdkToAgentLocal();
+await linkLocalAgentSkills();
 console.log(`  SDK deployed`);
