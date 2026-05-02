@@ -9,13 +9,11 @@ import { ConversationProvider } from "@/components/hooks/use-conversation-contex
 
 interface ChatAppProps {
   agentConfigs: AgentConfigEntry[];
-  tmpAgentConfigs?: AgentConfigEntry[];
   initialDoveSettings?: DoveSettings;
 }
 
 export function ChatApp({
   agentConfigs,
-  tmpAgentConfigs = [],
   initialDoveSettings,
 }: ChatAppProps) {
   const [activeAgentId, setActiveAgentId] = React.useState("dove");
@@ -37,7 +35,6 @@ export function ChatApp({
       <div className="flex h-screen bg-background overflow-hidden">
         <AgentSidebar
           agentConfigs={agentConfigs}
-          tmpAgentConfigs={tmpAgentConfigs}
           initialDoveSettings={initialDoveSettings}
           onSelectAgent={handleSelectAgent}
           activeAgentId={activeAgentId}
@@ -45,7 +42,7 @@ export function ChatApp({
         <AgentChat
           key={activeAgentId}
           agentId={activeAgentId}
-          agentConfigs={[...agentConfigs, ...tmpAgentConfigs]}
+          agentConfigs={agentConfigs}
           onIsLoadingChange={(loading) => {
             setIsLoading(loading);
             if (activeAgentId === "dove") setDoveIsRunning(loading);

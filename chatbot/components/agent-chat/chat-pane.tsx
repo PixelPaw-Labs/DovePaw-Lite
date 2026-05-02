@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Bot, ChevronLeft, ChevronRight, Clock, Info, Settings, Trash2 } from "lucide-react";
+import { Bell, Bot, ChevronLeft, ChevronRight, Settings, Trash2 } from "lucide-react";
 import { buildAgentDef } from "@@/lib/agents";
 import type { AgentConfigEntry } from "@@/lib/agents-config-schemas";
 import { USER_AVATAR } from "@/lib/avatars";
@@ -46,8 +46,6 @@ export interface ChatPaneProps {
   resolvePermission: (requestId: string, allowed: boolean) => Promise<void>;
   resolveQuestion: (requestId: string, answers: Record<string, string>) => Promise<void>;
   removeFromQueue: (index: number) => void;
-  // history panel — caller constructs and owns this node
-  historyPanel?: React.ReactNode;
 }
 
 export function ChatPane({
@@ -65,12 +63,10 @@ export function ChatPane({
   resolvePermission,
   resolveQuestion,
   removeFromQueue,
-  historyPanel,
 }: ChatPaneProps) {
   const router = useRouter();
   const { name: agentName, Icon: AgentIcon } = useActiveAgentLabel(agentId, agentConfigs);
 
-  const [historyOpen, setHistoryOpen] = React.useState(true);
   const [activeQuestionIdx, setActiveQuestionIdx] = React.useState(0);
   const [showAllAgents, setShowAllAgents] = React.useState(false);
   React.useEffect(() => {
@@ -79,31 +75,6 @@ export function ChatPane({
 
   // Keep active index in bounds when questions are resolved
   const clampedQuestionIdx = Math.min(activeQuestionIdx, Math.max(0, pendingQuestions.length - 1));
-
-  const [panelWidth, setPanelWidth] = React.useState(480);
-  const isResizing = React.useRef(false);
-
-  const onResizeStart = React.useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      isResizing.current = true;
-      const startX = e.clientX;
-      const startWidth = panelWidth;
-      const onMove = (ev: MouseEvent) => {
-        if (!isResizing.current) return;
-        const delta = startX - ev.clientX;
-        setPanelWidth(Math.max(260, startWidth + delta));
-      };
-      const onUp = () => {
-        isResizing.current = false;
-        window.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onUp);
-      };
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onUp);
-    },
-    [panelWidth],
-  );
 
   return (
     <>
@@ -125,13 +96,6 @@ export function ChatPane({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setHistoryOpen((v) => !v)}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${historyOpen ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-              title="Session history"
-            >
-              <Clock className="w-4 h-4" />
-            </button>
             {messages.some((msg) =>
               msg.segments.some(
                 (s) => (s.type === "text" && s.content.trim()) || s.type === "tool_call",
@@ -147,13 +111,6 @@ export function ChatPane({
             )}
             <button className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
               <Bell className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => router.push("/about")}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
-              title="About DovePaw"
-            >
-              <Info className="w-4 h-4" />
             </button>
             <button
               onClick={() => router.push("/settings")}
@@ -278,20 +235,6 @@ export function ChatPane({
         <div className="fixed bottom-0 left-0 w-1/2 h-1/2 bg-linear-to-tr from-accent/10 to-transparent pointer-events-none z-0" />
       </main>
 
-      {/* Right sidebar — session history */}
-      {historyOpen && historyPanel && (
-        <aside
-          style={{ width: panelWidth }}
-          className="relative shrink-0 h-screen border-l border-border/20 bg-background/60 backdrop-blur-xl flex flex-col overflow-hidden"
-        >
-          {/* Horizontal resize handle (left edge) */}
-          <div
-            onMouseDown={onResizeStart}
-            className="absolute left-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/30 transition-colors z-10"
-          />
-          {historyPanel}
-        </aside>
-      )}
     </>
   );
 }

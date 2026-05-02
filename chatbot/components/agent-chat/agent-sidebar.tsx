@@ -3,14 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Bot,
-  ChevronDown,
-  Package,
-  PawPrint,
-  Settings,
-  Sparkles,
-} from "lucide-react";
+import { Bot, PawPrint, Settings } from "lucide-react";
 import { LUCIDE_ICON_REGISTRY } from "@@/lib/icon-registry";
 import { buildAgentDef } from "@@/lib/agents";
 import type { AgentConfigEntry } from "@@/lib/agents-config-schemas";
@@ -20,19 +13,11 @@ import { useConversationContext } from "@/components/hooks/use-conversation-cont
 import { useButtonShimmer } from "@/components/hooks/use-button-shimmer";
 import { useDoveSettings } from "@/components/hooks/use-dove-settings";
 import type { DoveSettings } from "@@/lib/settings-schemas";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import type { AgentStatus } from "@/a2a/heartbeat-types";
 import { AgentButton } from "./agent-button";
 
-interface AgentGroup {
-  pluginName: string;
-  temporary: boolean;
-  agents: AgentConfigEntry[];
-}
-
 interface AgentSidebarProps {
   agentConfigs: AgentConfigEntry[];
-  tmpAgentConfigs?: AgentConfigEntry[];
   activeAgentId?: string;
   initialDoveSettings?: DoveSettings;
   onSelectAgent?: (agentId: string) => void;
@@ -40,7 +25,6 @@ interface AgentSidebarProps {
 
 export function AgentSidebar({
   agentConfigs,
-  tmpAgentConfigs = [],
   activeAgentId = "dove",
   initialDoveSettings,
   onSelectAgent,
@@ -89,23 +73,6 @@ export function AgentSidebar({
     }
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }
-
-  const pluginGroups: AgentGroup[] = agentConfigs.length > 0 || tmpAgentConfigs.length > 0
-    ? [
-        ...(agentConfigs.length > 0 ? [{ pluginName: "", temporary: false, agents: agentConfigs }] : []),
-        ...(tmpAgentConfigs.length > 0 ? [{ pluginName: "Kiln", temporary: true, agents: tmpAgentConfigs }] : []),
-      ]
-    : [];
-  const showHeaders = pluginGroups.some((g) => g.pluginName !== "");
-
-  async function handleDeleteTmpAgent(agentName: string) {
-    await fetch("/api/settings/agents", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: agentName }),
-    });
-    router.refresh();
   }
 
   return (
@@ -177,21 +144,24 @@ export function AgentSidebar({
           <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", "bg-green-500 animate-pulse")} />
         </button>
 
-        {/* Plugin groups */}
-        {pluginGroups.map((group) => (
-          <PluginGroup
-            key={group.pluginName || "__ungrouped__"}
-            group={group}
-            showHeader={showHeaders && group.pluginName !== ""}
-            pathname={pathname}
-            activeAgentId={activeAgentId}
-            isSettings={isSettings}
-            statuses={statuses}
-            hasData={hasData}
-            onSelectAgent={onSelectAgent}
-            onDeleteTmpAgent={group.temporary ? handleDeleteTmpAgent : undefined}
-          />
-        ))}
+        {agentConfigs.map((config) => {
+          const agent = buildAgentDef(config);
+          const isAgentSettings =
+            pathname === `/settings/agents/${agent.name}` ||
+            pathname === `/settings/agents/${agent.name}/repos`;
+          return (
+            <AgentButton
+              key={agent.manifestKey}
+              agent={agent}
+              isActive={!isSettings && !isAgentSettings && activeAgentId === agent.name}
+              status={statuses[agent.manifestKey]}
+              hasData={hasData}
+              onClick={() => onSelectAgent?.(agent.name)}
+              settingsHref={`/settings/agents/${agent.name}`}
+              isAgentSettings={isAgentSettings}
+            />
+          );
+        })}
       </nav>
 
       {/* Settings nav links — always pinned at bottom */}
@@ -237,74 +207,3 @@ export function AgentSidebar({
   );
 }
 
-// ─── PluginGroup ──────────────────────────────────────────────────────────────
-
-interface PluginGroupProps {
-  group: AgentGroup;
-  showHeader: boolean;
-  pathname: string;
-  activeAgentId: string;
-  isSettings: boolean;
-  statuses: Record<string, AgentStatus>;
-  hasData: boolean;
-  onSelectAgent?: (agentId: string) => void;
-  onDeleteTmpAgent?: (agentName: string) => Promise<void>;
-}
-
-function PluginGroup({
-  group,
-  showHeader,
-  pathname,
-  activeAgentId,
-  isSettings,
-  statuses,
-  hasData,
-  onSelectAgent,
-  onDeleteTmpAgent,
-}: PluginGroupProps) {
-  const [open, setOpen] = React.useState(true);
-
-  const GroupIcon = group.temporary ? Sparkles : Package;
-
-  const agentButtons = group.agents.map((config) => {
-    const agent = buildAgentDef(config);
-    const isAgentSettings =
-      pathname === `/settings/agents/${agent.name}` ||
-      pathname === `/settings/agents/${agent.name}/repos`;
-    return (
-      <AgentButton
-        key={agent.manifestKey}
-        agent={agent}
-        isActive={!isSettings && !isAgentSettings && activeAgentId === agent.name}
-        status={statuses[agent.manifestKey]}
-        hasData={hasData}
-        onClick={() => onSelectAgent?.(agent.name)}
-        settingsHref={`/settings/agents/${agent.name}`}
-        isAgentSettings={isAgentSettings}
-        onDelete={onDeleteTmpAgent ? () => void onDeleteTmpAgent(agent.name) : undefined}
-      />
-    );
-  });
-
-  if (!showHeader) {
-    return <>{agentButtons}</>;
-  }
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen} className="flex flex-col mt-3">
-      <CollapsibleTrigger className="flex items-center gap-2 px-4 py-2 w-full text-left border-t border-border/40 bg-muted/40 hover:bg-muted/70 transition-colors group">
-        <GroupIcon className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
-        <span className="flex-1 text-[11px] uppercase tracking-widest font-bold text-muted-foreground truncate">
-          {group.pluginName}
-        </span>
-        <ChevronDown
-          className={cn(
-            "w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
-            open ? "rotate-0" : "-rotate-90",
-          )}
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="flex flex-col gap-0">{agentButtons}</CollapsibleContent>
-    </Collapsible>
-  );
-}
