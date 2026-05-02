@@ -8,32 +8,6 @@ import type { AgentConfig } from "@/a2a/lib/agent-config-builder";
 import { recloneReposIntoWorkspace } from "@/a2a/lib/workspace";
 import type { PendingRegistry } from "@/lib/pending-registry";
 
-// ─── Moments writing pattern ──────────────────────────────────────────────────
-
-export const MOMENTS_PATTERN = `All substance stays. Only fluff dies.
-
-File rules:
-- One file per item.
-- Name clearly (e.g. "auth-decision.md", "api-schema.json").
-
-Core rules:
-- Drop articles: a, an, the.
-- Drop filler: just, really, basically, actually, simply.
-- Drop pleasantries, hedging, preamble.
-- Fragments OK.
-- Short synonyms: "big" not "extensive", "fix" not "implement a solution for".
-- Exact technical terms. Quote errors exactly.
-
-Preferred pattern: [thing] [action] [reason]. [next step].
-Example:
-  Bad: "I've decided that we should probably use Redis for caching because it might help with performance."
-  Good: "Cache layer: Redis. Reason: sub-ms reads, existing infra. Next: wire into auth middleware."
-
-Exception — write full sentences for:
-- Security warnings.
-- Irreversible action confirmations.
-- Multi-step sequences where fragments cause misread.`;
-
 // ─── Script run tool name helpers ─────────────────────────────────────────────
 
 /** Tool name for firing the agent script in the background (start_run_script_* pattern). */
