@@ -207,7 +207,12 @@ export class QueryAgentExecutor {
                   `mcp__agents__${awaitRunScriptToolName(this.def.manifestKey)}`,
                 ],
                 mcpServers: { agents: innerMcpServer },
-                hooks: buildSubAgentHooks(cwd, additionalDirectories, registry),
+                hooks: buildSubAgentHooks(
+                  cwd,
+                  additionalDirectories,
+                  registry,
+                  effectiveDoveSettings(globalSettings).subAgentBehaviorReminder || undefined,
+                ),
                 abortController: this.abortController ?? undefined,
                 permissionMode: "acceptEdits",
                 includePartialMessages: true,

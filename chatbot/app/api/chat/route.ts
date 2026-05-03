@@ -198,6 +198,7 @@ export async function POST(request: Request) {
                 settingSources: doveStrategy.settingSources,
                 hooks: buildDoveHooks(agents, doveRegistry, AGENTS_ROOT, additionalDirectories, {
                   disallowedTools,
+                  behaviorReminder: doveSettings.behaviorReminder || undefined,
                 }),
                 canUseTool: doveCanUseTool,
               },

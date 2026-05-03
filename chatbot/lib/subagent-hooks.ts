@@ -8,12 +8,9 @@
 import type { HookCallbackMatcher, HookEvent } from "@anthropic-ai/claude-agent-sdk";
 import { buildAgentHooks } from "@/lib/hooks";
 import type { PendingRegistry } from "@/lib/pending-registry";
+import { SUBAGENT_PROMPT_REMINDER, buildSubAgentReminder } from "@@/lib/subagent-reminder";
 
-// ─── Script reminder ──────────────────────────────────────────────────────────
-
-export const SUBAGENT_PROMPT_REMINDER = `<reminder>
-- When the user's intent is resolved by SOMETHING BEING DONE: ALWAYS START yourself first (returns runId immediately), tell the user what you've kicked off, then WAIT as a **background Task** concurrently.
-</reminder>`;
+export { SUBAGENT_PROMPT_REMINDER };
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
@@ -22,11 +19,12 @@ export function buildSubAgentHooks(
   cwd: string,
   additionalDirectories: string[],
   registry: PendingRegistry,
+  behaviorReminder?: string,
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
   return buildAgentHooks({
     postToolUseMatcher: "mcp__agents__await_.*",
     registry,
-    userPromptReminder: SUBAGENT_PROMPT_REMINDER,
+    userPromptReminder: buildSubAgentReminder(behaviorReminder),
     allowedDirectories: [cwd, ...additionalDirectories],
   });
 }
