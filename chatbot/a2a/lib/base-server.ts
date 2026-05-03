@@ -41,6 +41,7 @@ import {
 } from "@a2a-js/sdk/server/express";
 import { QueryAgentExecutor } from "./query-agent-executor";
 import type { ExecutorPublisher } from "./executor-publisher";
+import { makeAgentMgmtTools } from "@/lib/agent-mgmt-tools";
 export { portsManifestSchema, writePortsManifest, readPortsManifest } from "./ports-manifest";
 export type { PortsManifest } from "./ports-manifest";
 import { SessionManager } from "@/lib/session-manager";
@@ -203,7 +204,7 @@ export function createServerFromDef(def: AgentDef, port: number): void {
         publisherRegistry,
         port,
         persistence,
-        [],
+        makeAgentMgmtTools(def),
         scheduler.getSchedulerDirs(),
       );
       activeExecutors.set(requestContext.taskId, inst);
