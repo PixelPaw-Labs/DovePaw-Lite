@@ -1,7 +1,9 @@
+import { existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
-import { upsertSession } from "@/lib/db-lite";
+import { upsertSession, getSessionResumable } from "@/lib/db-lite";
 import type { StreamedResult } from "@/lib/a2a-client";
 import type { SessionMessage } from "@/lib/message-types";
+import { restoreAgentWorkspace } from "@/a2a/lib/workspace";
 import type { AgentWorkspace } from "@/a2a/lib/workspace";
 
 export interface SessionPersistence {
@@ -58,12 +60,16 @@ export class SessionManager {
       .toReversed();
   }
 
-  /**
-   * Restore a session from the DB into this in-memory manager.
-   * No-op — session resumption is not supported in Lite.
-   */
-  restore(_contextId: string, _agentId: string): void {
-    return;
+  restore(contextId: string, agentId: string): void {
+    if (this.sessions.has(contextId)) return;
+    const resumable = getSessionResumable(contextId, agentId);
+    if (!resumable || !existsSync(resumable.workspacePath)) return;
+    this.set(contextId, {
+      subagentSessionId: resumable.subagentSessionId,
+      workspace: restoreAgentWorkspace(resumable.workspacePath),
+      startedAt: new Date(resumable.startedAt),
+      label: resumable.label,
+    });
   }
 
   static save(
