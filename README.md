@@ -86,6 +86,8 @@ scripts/
 
 ## Getting Started
 
+> **Full walkthrough:** see [docs/getting-started.md](docs/getting-started.md) for a step-by-step guide with UI screenshots.
+
 **Prerequisites:** Node.js 20+, Claude Code CLI authenticated (or `ANTHROPIC_API_KEY` set).
 
 ```bash
