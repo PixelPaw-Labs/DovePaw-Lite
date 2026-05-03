@@ -18,7 +18,7 @@ import {
   buildSubAgentPrompt,
   startRunScriptToolName,
   awaitRunScriptToolName,
-} from "@/lib/agent-tools";
+} from "@/lib/agent-script-tools";
 import { AgentConfigReader } from "./agent-config-reader";
 import { extractInstruction } from "./message-parts";
 import { buildAgentConfig } from "./agent-config-builder";

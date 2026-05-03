@@ -1,7 +1,7 @@
 /**
  * AgentConfig type and its factory function.
  *
- * Kept separate from spawn.ts so the type can be imported by agent-tools.ts
+ * Kept separate from spawn.ts so the type can be imported by agent-script-tools.ts
  * (and tests) without pulling in spawning dependencies.
  */
 

@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 // These are pure functions — no mocks needed.
 import { extractInstruction } from "../message-parts";
 import { buildScriptArgs } from "../spawn";
-import { startRunScriptToolName } from "@/lib/agent-tools";
+import { startRunScriptToolName, withMemoryReminder } from "@/lib/agent-script-tools";
 
 const startScriptTool = startRunScriptToolName("test_agent");
 
@@ -81,5 +81,26 @@ describe("buildScriptArgs", () => {
   it("always puts scriptPath first", () => {
     const args = buildScriptArgs("/some/path.ts", "run");
     expect(args[0]).toBe("/some/path.ts");
+  });
+});
+
+describe("withMemoryReminder", () => {
+  it("prepends memory check block before the instruction", () => {
+    const result = withMemoryReminder("Do the task", "/state/.my-agent", "my_agent");
+    expect(result).toMatch(/^<memory_check>/);
+    expect(result).toContain("/state/.my-agent/memory/MEMORY.md");
+    expect(result).toContain("Do the task");
+  });
+
+  it("references the start tool name in the fallback instruction", () => {
+    const result = withMemoryReminder("Do the task", "/state/.my-agent", "my_agent");
+    expect(result).toContain("start_my_agent");
+  });
+
+  it("instruction appears after the memory_check block", () => {
+    const result = withMemoryReminder("Do the task", "/state/.my-agent", "my_agent");
+    const instructionIdx = result.indexOf("Do the task");
+    const closingTagIdx = result.indexOf("</memory_check>");
+    expect(instructionIdx).toBeGreaterThan(closingTagIdx);
   });
 });
