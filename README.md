@@ -7,7 +7,7 @@
   <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white" alt="Next.js" /></a>
   <a href="https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk"><img src="https://img.shields.io/badge/Claude_Agent_SDK-Anthropic-CC785C?logo=anthropic&logoColor=white" alt="Claude Agent SDK" /></a>
-  <a href="https://platform.openai.com/docs/codex"><img src="https://img.shields.io/badge/Codex-OpenAI-412991?logo=openai&logoColor=white" alt="OpenAI Codex" /></a>
+  <a href="https://www.npmjs.com/package/@openai/codex-sdk"><img src="https://img.shields.io/badge/Codex_SDK-OpenAI-412991?logo=openai&logoColor=white" alt="Codex SDK" /></a>
   <a href="https://a2a-protocol.org/"><img src="https://img.shields.io/badge/A2A-Protocol-5C6BC0?logo=googlemessages&logoColor=white" alt="A2A Protocol" /></a>
   <a href="https://github.com/PixelPaw-Labs/DovePaw-Lite/actions/workflows/ci.yml"><img src="https://github.com/PixelPaw-Labs/DovePaw-Lite/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/tested_with-Vitest-6E9F18?logo=vitest&logoColor=white" alt="Vitest" /></a>
