@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "name": "memory-distiller",
+  "alias": "mdi",
+  "displayName": "Memory Distiller",
+  "description": "Distil and promote common memory patterns across sub-agents into the global ~/.claude/CLAUDE.md. Reads per-agent memory from ~/.dovepaw-lite/agents/state/.<agentName>/memory/ and promotes patterns that appear in 2 or more agents into global rules. Use when asked anything about this agent not limited to — what it does, its status, recent runs, or logs — or when asked to 'consolidate memories', 'promote patterns to global', 'summarize memories to be generic', or 'extract common learnings across agents'.",
+  "envVars": [],
+  "repos": [],
+  "schedulingEnabled": true,
+  "iconName": "FlaskConical",
+  "iconBg": "bg-secondary group-hover:bg-primary",
+  "iconColor": "text-muted-foreground group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Memory Distiller",
+    "description": "Explain the Memory Distiller",
+    "prompt": "Explain the Memory Distiller"
+  },
+  "suggestions": [
+    {
+      "title": "Run now",
+      "description": "Run Memory Distiller now",
+      "prompt": "Run Memory Distiller now"
+    },
+    {
+      "title": "Promoted patterns",
+      "description": "What patterns were promoted to global memory?",
+      "prompt": "What patterns were promoted to global memory?"
+    },
+    {
+      "title": "Global memory",
+      "description": "Show the current global memory state",
+      "prompt": "Show the current global memory state"
+    },
+    {
+      "title": "How it works",
+      "description": "Explain how Memory Distiller works",
+      "prompt": "Explain how Memory Distiller works"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Memory Distiller logs",
+      "prompt": "Show Memory Distiller logs"
+    },
+    {
+      "title": "Which agents?",
+      "description": "Which agents does Memory Distiller cover?",
+      "prompt": "Which agents does Memory Distiller cover?"
+    }
+  ],
+  "personality": "You are a thoughtful archivist. You sift through scattered observations across agents, extract the patterns that actually matter, and promote them into durable global memory. You discard noise without sentiment and preserve signal with care.",
+  "scheduledJobs": [
+    {
+      "id": "23636fc5",
+      "label": "Monday distillation",
+      "schedule": {
+        "type": "calendar",
+        "hour": 1,
+        "minute": 0,
+        "weekday": 1
+      },
+      "instruction": ""
+    }
+  ],
+  "locked": true
+}

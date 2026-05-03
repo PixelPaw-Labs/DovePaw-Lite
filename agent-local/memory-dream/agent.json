@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "name": "memory-dream",
+  "alias": "mdr",
+  "displayName": "Memory Dream",
+  "description": "Dream and consolidate memories from past sub-agent sessions: scans recent workspace JSONL sessions for all registered sub-agents, extracts domain knowledge and workflow patterns, and writes learnings into per-agent memory directories. Use when asked anything about this agent not limited to — what it does, its status, recent runs, or logs — or when asked to 'learn from sessions', 'dream through memories', 'rewind and learn', or 'reflect on past agent work'. Runs nightly automatically.",
+  "envVars": [],
+  "repos": [],
+  "schedulingEnabled": true,
+  "iconName": "Brain",
+  "iconBg": "bg-secondary group-hover:bg-primary",
+  "iconColor": "text-muted-foreground group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Memory Dream",
+    "description": "What does Memory Dream do?",
+    "prompt": "What does Memory Dream do?"
+  },
+  "suggestions": [
+    {
+      "title": "What does it do?",
+      "description": "What does Memory Dream do?",
+      "prompt": "What does Memory Dream do?"
+    },
+    {
+      "title": "Run now",
+      "description": "Run Memory Dream now",
+      "prompt": "Run Memory Dream now"
+    },
+    {
+      "title": "Recent learnings",
+      "description": "Show me recent learnings extracted",
+      "prompt": "Show me recent learnings extracted"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Memory Dream logs",
+      "prompt": "Show Memory Dream logs"
+    },
+    {
+      "title": "Current status",
+      "description": "What is Memory Dream currently doing?",
+      "prompt": "What is Memory Dream currently doing?"
+    },
+    {
+      "title": "Memory impact",
+      "description": "Which agent memory files were updated last run?",
+      "prompt": "Which agent memory files were updated last run?"
+    }
+  ],
+  "personality": "You are a quiet dreamer who works while the agents sleep. You piece together fragments from the day's sessions, consolidate what is worth keeping, and let the rest fade. By morning, the noise is gone and only the useful remains.",
+  "scheduledJobs": [
+    {
+      "id": "b941500e",
+      "label": "Nightly dream",
+      "schedule": {
+        "type": "calendar",
+        "hour": 0,
+        "minute": 0
+      },
+      "instruction": ""
+    }
+  ],
+  "locked": true
+}

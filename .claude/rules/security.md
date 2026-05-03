@@ -1,6 +1,7 @@
 # Security — Secrets
 
 ## Handling Secrets
+
 - Never output, print, or echo actual secret values (API keys, tokens, passwords, credentials) in chat responses, code, or logs.
 - When referencing a secret, use the variable name or a placeholder (e.g., `$API_KEY`, `<your-token>`) — never the real value.
 - If a secret appears in context (env vars, config files, tool output), treat it as sensitive and do not repeat it back.

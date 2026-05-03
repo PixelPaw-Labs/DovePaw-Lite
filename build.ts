@@ -36,7 +36,9 @@ if (uninstall) {
 
 // ─── Build ───────────────────────────────────────────────────────────────────
 
-console.log("Step 1: Building TypeScript...\n");
+// Sync agent.json files from agent-local/ before building so tsup picks up new agents
+console.log("Step 1: Syncing agent definitions and building TypeScript...\n");
+await syncAgentLocalToSettings();
 execSync("npx tsup", { stdio: "inherit", cwd: import.meta.dirname });
 
 // ─── Install + load ──────────────────────────────────────────────────────────
@@ -45,7 +47,6 @@ console.log("\nStep 2: Linking skills and deploying SDK...\n");
 await deployAgentSdk();
 await linkAgentSdkToAgentLocal();
 await linkLocalAgentSkills();
-await syncAgentLocalToSettings();
 console.log(`  SDK deployed to ~/.dovepaw-lite/sdk`);
 
 if (process.platform === "win32") {
