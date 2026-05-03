@@ -1,3 +1,19 @@
+<p align="center">
+  <img src="docs/assets/logo.png" width="220" alt="DovePaw Lite" />
+</p>
+
+<p align="center">
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white" alt="Next.js" /></a>
+  <a href="https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk"><img src="https://img.shields.io/badge/Claude_Agent_SDK-Anthropic-CC785C?logo=anthropic&logoColor=white" alt="Claude Agent SDK" /></a>
+  <a href="https://platform.openai.com/docs/codex"><img src="https://img.shields.io/badge/Codex-OpenAI-412991?logo=openai&logoColor=white" alt="OpenAI Codex" /></a>
+  <a href="https://a2a-protocol.org/"><img src="https://img.shields.io/badge/A2A-Protocol-5C6BC0?logo=googlemessages&logoColor=white" alt="A2A Protocol" /></a>
+  <a href="https://github.com/PixelPaw-Labs/DovePaw-Lite/actions/workflows/ci.yml"><img src="https://github.com/PixelPaw-Labs/DovePaw-Lite/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/tested_with-Vitest-6E9F18?logo=vitest&logoColor=white" alt="Vitest" /></a>
+  <a href=".github/dependabot.yml"><img src="https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot&logoColor=white" alt="Dependabot" /></a>
+</p>
+
 # DovePaw
 
 Multi-agent orchestration runtime built on the [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk). Drop agent scripts into `agent-local/`, run `npm run dev`, and a Dove chatbot immediately surfaces them as conversational tools — no config, no hardcoded ports. Scripts can be TypeScript (`.ts`), Python (`.py`), Ruby (`.rb`), or shell (`.sh`). Schedule agents via macOS launchd or Linux cron, or deploy to ECS with S3-backed config.

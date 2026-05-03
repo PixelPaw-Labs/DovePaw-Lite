@@ -11,6 +11,58 @@ This guide walks you through installation, first launch, and every Settings tab 
 
 ---
 
+## Authentication — API keys vs subscriptions
+
+DovePaw has two runtime tiers that both call Claude under the hood: the **Dove chatbot** (handles your messages) and the **agent scripts** (spawned per task). Authentication for both follows the same rules.
+
+### Claude — Claude Code subscription vs `ANTHROPIC_API_KEY`
+
+**If you have a Claude Code subscription** and have already authenticated the CLI:
+
+```bash
+claude  # run once to complete OAuth login if you haven't already
+```
+
+DovePaw's `query()` calls read `~/.claude` automatically. No `ANTHROPIC_API_KEY` is needed — the Dove chatbot, sub-agent layer, and every agent script all share the same authenticated session.
+
+**If you use a raw Anthropic API key** (no Claude Code CLI, or want explicit API billing):
+
+1. Open **Settings → Environment Variables → + Add Variable**
+2. Key: `ANTHROPIC_API_KEY` · Value: your key · toggle **Secret**
+
+The key is injected into every `query()` call for both Dove and all agent processes. When both the OAuth session and `ANTHROPIC_API_KEY` are present, the API key takes precedence.
+
+**Per-agent override** — useful if different agents should bill to different accounts: add `ANTHROPIC_API_KEY` in the **agent's own Environment Variables tab** instead of the global one. Agent-level values always win over globals.
+
+### Codex — OpenAI API key
+
+Agents run on Claude by default. To switch an individual agent (or all agents globally) to a GPT/Codex model, set the `AGENT_SCRIPT_MODEL` environment variable:
+
+| Value          | Runner selected                 |
+| -------------- | ------------------------------- |
+| _(unset)_      | ClaudeRunner (Claude Code auth) |
+| `claude-*`     | ClaudeRunner                    |
+| `codex`        | CodexRunner (default model)     |
+| `gpt-5.4-mini` | CodexRunner                     |
+| `gpt-5.4`      | CodexRunner                     |
+
+When a Codex model is active the CodexRunner reads `OPENAI_API_KEY` from the environment. Unlike the Claude path there is **no Codex CLI session fallback** — the key must be present.
+
+1. Add `OPENAI_API_KEY` in **Settings → Environment Variables** (mark Secret).
+2. Add `AGENT_SCRIPT_MODEL` = `gpt-5.4-mini` (or your preferred model) in the same tab, or in a specific agent's Environment Variables tab to scope it to that agent only.
+
+### Quick reference
+
+| Scenario                                    | What to configure                                                                               |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Claude Code subscription, `claude` authed   | Nothing — all layers work out of the box                                                        |
+| No Claude Code CLI / direct API billing     | `ANTHROPIC_API_KEY` in Global Settings → Environment Variables                                  |
+| Per-agent API key (different account/quota) | `ANTHROPIC_API_KEY` in that agent's Environment Variables tab                                   |
+| Use Codex/GPT for a specific agent          | `OPENAI_API_KEY` + `AGENT_SCRIPT_MODEL=gpt-5.4-mini` in that agent's Environment Variables tab  |
+| Use Codex/GPT for all agents globally       | `OPENAI_API_KEY` + `AGENT_SCRIPT_MODEL=gpt-5.4-mini` in Global Settings → Environment Variables |
+
+---
+
 ## 1. Install and start
 
 ```bash

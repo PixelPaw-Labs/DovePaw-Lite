@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, PawPrint, Settings } from "lucide-react";
+import { Bot, HelpCircle, PawPrint, Settings } from "lucide-react";
 import { LUCIDE_ICON_REGISTRY } from "@@/lib/icon-registry";
 import { buildAgentDef } from "@@/lib/agents";
 import type { AgentConfigEntry } from "@@/lib/agents-config-schemas";
@@ -169,6 +169,15 @@ export function AgentSidebar({ agentConfigs, initialDoveSettings }: AgentSidebar
             Settings
           </span>
         </Link>
+        <a
+          href="https://github.com/PixelPaw-Labs/DovePaw-Lite/blob/main/docs/getting-started.md"
+          target="_blank"
+          rel="noreferrer"
+          className="my-0.5 px-4 py-2.5 flex items-center gap-3 transition-all w-full text-muted-foreground hover:bg-muted hover:translate-x-0.5 duration-200"
+        >
+          <HelpCircle className="w-4 h-4 shrink-0" />
+          <span className="text-sm font-medium text-foreground/80">Help</span>
+        </a>
       </div>
 
       {/* Bottom branding */}
