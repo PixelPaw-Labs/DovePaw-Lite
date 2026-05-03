@@ -1,6 +1,6 @@
-# DovePaw — Architecture Overview
+# DovePaw Lite — Architecture Overview
 
-DovePaw is a plugin-based multi-agent orchestration platform. It provides the runtime, chatbot UI, and tooling for running autonomous AI agents. Agents can be invoked directly via chat, triggered by an orchestrating agent, or scheduled as macOS launchd daemons — scheduling is optional and per-agent. Agent scripts themselves live in separate installable **plugin repos** — DovePaw does not bundle any agents directly.
+DovePaw Lite is a self-contained multi-agent orchestration platform. It provides the runtime, chatbot UI, and tooling for running autonomous AI agents. Agents can be invoked directly via chat, triggered by an orchestrating agent, or scheduled as macOS launchd daemons — scheduling is optional and per-agent. Agent scripts live directly in the repo under `agent-local/` — there is no external plugin system.
 
 ## Three-Layer Runtime
 
@@ -13,7 +13,7 @@ Claude Agent SDK  (in-process MCP server)
         ↓ A2A SSE
 A2A Servers  (one Express process per agent, OS-assigned ports)
         ↓ spawn tsx
-Agent Scripts  (from installed plugin repos, run as launchd daemons)
+Agent Scripts  (agent-local/<name>/main.ts, run as launchd daemons)
 ```
 
 Each agent exposes three MCP tools to the chatbot layer:
@@ -24,37 +24,34 @@ Each agent exposes three MCP tools to the chatbot layer:
 | `start_*` | Fire-and-forget — returns a session ID immediately |
 | `await_*` | Poll — retrieves the result of a prior `start_*` call |
 
-## Plugin System
+## Agent Structure
 
-Agents are packaged as **plugin repos** — ordinary git repositories that contain a `dovepaw-plugin.json` manifest and one or more agent scripts. Plugins are installed via the CLI or the chatbot Settings UI. DovePaw clones the repo into `~/.dovepaw-lite/plugins/`, reads the manifest, and writes per-agent config into `~/.dovepaw-lite/settings.agents/`.
+Agent scripts live in the repo at `agent-local/<name>/main.ts` (or the `scriptFile` named in their config). Each agent is registered by placing a combined definition + settings file at `~/.dovepaw-lite/settings.agents/<name>/agent.json`. New agents can be added via the Settings UI ("Add Agent" dialog) or by writing the JSON file directly.
 
 ```
-Plugin repo (e.g. owner/my-agents)
-  dovepaw-plugin.json       — manifest: name, version, agent list
-  agents/<agent-name>/
-    agent.json              — agent metadata: schedule, icon, MCP description
-    main.ts                 — agent entry point
-```
+agent-local/
+  <agent-name>/
+    main.ts       — agent entry point (TypeScript)
 
-`agents/` in the DovePaw repo root is a symlink to `~/.dovepaw-lite/plugins/`, so every installed plugin's agents are visible to the build and A2A servers without any manual wiring.
+~/.dovepaw-lite/settings.agents/<agent-name>/
+  agent.json      — agent definition + per-agent runtime settings
+```
 
 ## Key Concepts
 
-**Dynamic agent registry.** The set of agents is determined at runtime by which plugins are installed, not hardcoded in DovePaw. The registry builds `AgentDef` objects from per-agent config files at startup.
+**Agent registry.** The set of active agents is determined at runtime by which `agent.json` files exist under `~/.dovepaw-lite/settings.agents/`. The registry builds `AgentDef` objects from these files at startup — no hardcoded agent list in the source.
 
 **Dynamic ports.** A2A servers bind to OS-assigned ports at startup and publish a port manifest to `~/.dovepaw-lite/`. The chatbot polls this manifest to discover server addresses — no hardcoded ports anywhere.
 
 **MCP tool naming.** Each agent's MCP tool name is derived as `yolo_<agent_name_with_underscores>` from the agent's kebab-case name in its `agent.json`.
 
-**Parallel execution.** Agents that support concurrent work (e.g. ticket forging) spawn multiple Claude CLI subprocesses in isolated git worktrees simultaneously. A watchdog reclaims orphaned worktrees on exit.
+**Parallel execution.** Agents that support concurrent work spawn multiple Claude CLI subprocesses in isolated git worktrees simultaneously. A watchdog reclaims orphaned worktrees on exit.
 
 **Environment isolation.** Agent processes run with a sanitised environment (clean PATH, `CLAUDECODE` unset) so nested Claude CLI invocations work correctly. Per-agent secrets are injected at daemon install time from settings.
 
 **User data directory.** All runtime state lives outside the repo under `~/.dovepaw-lite/`:
-- `plugins/` — installed plugin repos
-- `plugins.json` — plugin registry
-- `settings.json` — global settings (repositories, API keys)
-- `settings.agents/` — per-agent config (schedule, env vars, plugin path)
+- `settings.json` — global settings (repositories, API keys, Dove persona)
+- `settings.agents/` — per-agent config (definition, schedule, env vars, repos)
 - `workspaces/` — isolated agent execution roots
 - `cron/` — compiled daemon scripts deployed by `npm run install`
 
