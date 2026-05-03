@@ -19,7 +19,7 @@
 Multi-agent orchestration runtime built on the [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk). Drop agent scripts into `agent-local/`, run `npm run dev`, and a Dove chatbot immediately surfaces them as conversational tools — no config, no hardcoded ports. Scripts can be TypeScript (`.ts`), Python (`.py`), Ruby (`.rb`), or shell (`.sh`). Schedule agents via macOS launchd or Linux cron, or deploy to ECS with S3-backed config.
 
 <p align="center">
-  <video src="dovepaw-tutorial-animation/dovepaw-hero-final.mp4" controls width="720"></video>
+  <img src="docs/assets/hero-preview.gif" width="720" alt="DovePaw demo" />
 </p>
 
 ---
