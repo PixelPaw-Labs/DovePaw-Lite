@@ -12,6 +12,7 @@ import path from "path";
 import type {
   UserPromptSubmitHookSpecificOutput,
   PreToolUseHookSpecificOutput,
+  PostToolUseHookSpecificOutput,
   HookCallbackMatcher,
   HookEvent,
   CanUseTool,
@@ -73,6 +74,8 @@ export interface AgentHooksConfig {
    * Matcher is built dynamically from this list.
    */
   disallowedTools?: string[];
+  /** Injected as PostToolUse block reason when an await_* task reaches a terminal state. */
+  responseReminder?: string;
 }
 
 function buildPendingBlockReason(entries: PendingEntry[]): string {
@@ -93,8 +96,14 @@ function buildPendingBlockReason(entries: PendingEntry[]): string {
 export function buildAgentHooks(
   config: AgentHooksConfig,
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
-  const { postToolUseMatcher, registry, userPromptReminder, allowedDirectories, disallowedTools } =
-    config;
+  const {
+    postToolUseMatcher,
+    registry,
+    userPromptReminder,
+    allowedDirectories,
+    disallowedTools,
+    responseReminder,
+  } = config;
   //const retryCounter = new StillRunningRetryCounter();
   const resolvedAllowed = allowedDirectories?.map((d) => path.resolve(d));
 
@@ -245,6 +254,13 @@ export function buildAgentHooks(
               //}
               return { decision: "block", reason: buildPendingBlockReason(registry.getPending()) };
             }
+            if (responseReminder && status === "completed") {
+              const hookSpecificOutput: PostToolUseHookSpecificOutput = {
+                hookEventName: "PostToolUse",
+                additionalContext: `<reminder>\n${responseReminder}\n</reminder>`,
+              };
+              return { hookSpecificOutput };
+            }
             return { continue: true };
           },
         ],
@@ -261,7 +277,11 @@ export function buildDoveHooks(
   registry: PendingRegistry,
   cwd: string,
   additionalDirectories: string[],
-  options: { disallowedTools?: string[]; behaviorReminder?: string } = {},
+  options: {
+    disallowedTools?: string[];
+    behaviorReminder?: string;
+    responseReminder?: string;
+  } = {},
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
   return buildAgentHooks({
     postToolUseMatcher: agents.map((a) => `mcp__agents__${doveAwaitToolName(a)}`).join("|"),
@@ -269,6 +289,7 @@ export function buildDoveHooks(
     userPromptReminder: buildDoveLeanReminder(options.behaviorReminder),
     allowedDirectories: [cwd, ...additionalDirectories],
     disallowedTools: options.disallowedTools,
+    responseReminder: options.responseReminder,
   });
 }
 

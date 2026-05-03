@@ -13,12 +13,14 @@ function makeConfig(overrides?: {
   registry?: PendingRegistry;
   userPromptReminder?: string;
   allowedDirectories?: string[];
+  responseReminder?: string;
 }) {
   return {
     postToolUseMatcher: "test_tool",
     registry: overrides?.registry ?? new PendingRegistry(),
     userPromptReminder: overrides?.userPromptReminder,
     allowedDirectories: overrides?.allowedDirectories,
+    responseReminder: overrides?.responseReminder,
   };
 }
 
@@ -153,6 +155,45 @@ describe("buildAgentHooks — PostToolUse hook", () => {
     const { reason } = result as { reason: string };
     expect(reason).toContain("Never recall any previous run from log or memory");
     vi.restoreAllMocks();
+  });
+
+  it("injects responseReminder wrapped in <reminder> tags when status is completed", async () => {
+    const hooks = buildAgentHooks(makeConfig({ responseReminder: "Deliver your response now." }));
+    const fn = hooks.PostToolUse![0]!.hooks[0]!;
+    const result = await callHook(fn, postToolUseInput({ status: "completed", taskId: "t-1" }));
+    const { hookSpecificOutput } = result as {
+      hookSpecificOutput: { hookEventName: string; additionalContext: string };
+    };
+    expect(hookSpecificOutput.hookEventName).toBe("PostToolUse");
+    expect(hookSpecificOutput.additionalContext).toBe(
+      "<reminder>\nDeliver your response now.\n</reminder>",
+    );
+  });
+
+  it("passes through on completed when responseReminder is not set", async () => {
+    const hooks = buildAgentHooks(makeConfig());
+    const fn = hooks.PostToolUse![0]!.hooks[0]!;
+    const result = await callHook(fn, postToolUseInput({ status: "completed", taskId: "t-1" }));
+    expect(result).toEqual({ continue: true });
+  });
+
+  it("does not inject responseReminder on still_running (still blocks)", async () => {
+    const hooks = buildAgentHooks(
+      makeConfig({
+        registry: makeRegistry([{ awaitTool: "await_run_script", idKey: "runId", id: "r" }]),
+        responseReminder: "Deliver your response now.",
+      }),
+    );
+    const fn = hooks.PostToolUse![0]!.hooks[0]!;
+    const result = await callHook(fn, postToolUseInput({ status: "still_running" }));
+    expect((result as { decision?: string }).decision).toBe("block");
+  });
+
+  it("passes through responseReminder on non-completed terminal status", async () => {
+    const hooks = buildAgentHooks(makeConfig({ responseReminder: "Deliver your response now." }));
+    const fn = hooks.PostToolUse![0]!.hooks[0]!;
+    const result = await callHook(fn, postToolUseInput({ status: "failed", taskId: "t-1" }));
+    expect(result).toEqual({ continue: true });
   });
 });
 
@@ -411,6 +452,18 @@ describe("buildSubAgentHooks — UserPromptSubmit reminder", () => {
     });
     const { hookSpecificOutput } = result as { hookSpecificOutput: { additionalContext: string } };
     expect(hookSpecificOutput.additionalContext).toBe(SUBAGENT_PROMPT_REMINDER);
+  });
+
+  it("injects responseReminder via PostToolUse on completed", async () => {
+    const hooks = buildSubAgentHooks("/cwd", [], makeRegistry(), undefined, "Reply to user now.");
+    const fn = hooks.PostToolUse![0]!.hooks[0]!;
+    const result = await callHook(fn, postToolUseInput({ status: "completed", taskId: "t-1" }));
+    const { hookSpecificOutput } = result as {
+      hookSpecificOutput: { additionalContext: string };
+    };
+    expect(hookSpecificOutput.additionalContext).toBe(
+      "<reminder>\nReply to user now.\n</reminder>",
+    );
   });
 });
 

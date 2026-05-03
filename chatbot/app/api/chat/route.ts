@@ -199,6 +199,7 @@ export async function POST(request: Request) {
                 hooks: buildDoveHooks(agents, doveRegistry, AGENTS_ROOT, additionalDirectories, {
                   disallowedTools,
                   behaviorReminder: doveSettings.behaviorReminder || undefined,
+                  responseReminder: doveSettings.responseReminder || undefined,
                 }),
                 canUseTool: doveCanUseTool,
               },

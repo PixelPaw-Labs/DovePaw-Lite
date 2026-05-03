@@ -212,6 +212,7 @@ export class QueryAgentExecutor {
                   additionalDirectories,
                   registry,
                   effectiveDoveSettings(globalSettings).subAgentBehaviorReminder || undefined,
+                  effectiveDoveSettings(globalSettings).subAgentResponseReminder || undefined,
                 ),
                 abortController: this.abortController ?? undefined,
                 permissionMode: "acceptEdits",

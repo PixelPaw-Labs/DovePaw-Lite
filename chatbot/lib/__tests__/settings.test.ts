@@ -411,6 +411,8 @@ describe("effectiveDoveSettings", () => {
       allowWebTools: false,
       behaviorReminder: "",
       subAgentBehaviorReminder: "",
+      responseReminder: "",
+      subAgentResponseReminder: "",
     };
     await writeSettings(settings);
     const loaded = await readSettings();
