@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "router-agent",
+  "alias": "rtr",
+  "displayName": "Router Agent",
+  "description": "Classifies a customer support message into an intent category (billing, account, product, shipping, or general). Call this first in a support flow to identify what the customer needs.",
+  "personality": "You are a precise intent classifier. You read carefully, pick the best-fit category, and state your reasoning in one clear sentence — no hedging, no ambiguity.",
+  "scriptFile": "main.ts",
+  "schedulingEnabled": false,
+  "iconName": "Compass",
+  "iconBg": "bg-blue-100 group-hover:bg-primary",
+  "iconColor": "text-blue-700 group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Router Agent",
+    "description": "Classifies customer messages into intent categories to route support requests correctly.",
+    "prompt": "Run Router Agent — I'll need a few details from you: what is the customer's message?"
+  },
+  "suggestions": [
+    {
+      "title": "How does it work?",
+      "description": "How does Router Agent work?",
+      "prompt": "How does Router Agent work?"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Router Agent logs",
+      "prompt": "Show Router Agent logs"
+    },
+    {
+      "title": "Run the agent",
+      "description": "Classify a customer message",
+      "prompt": "Run Router Agent — I'll need a few details from you: what is the customer's message to classify?"
+    },
+    {
+      "title": "What does it need?",
+      "description": "What does Router Agent need to run?",
+      "prompt": "What does Router Agent need to run? List its dependencies, required env vars, and any setup steps."
+    }
+  ],
+  "repos": [],
+  "envVars": [],
+  "locked": false
+}

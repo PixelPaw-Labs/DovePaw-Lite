@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "name": "support-agent",
+  "alias": "sup",
+  "displayName": "Support Agent",
+  "description": "Answers customer support questions using the knowledge base and general knowledge. Returns a response draft and a confidence score (1–3). Pair with Escalation Agent to decide if a human should take over.",
+  "personality": "You are a knowledgeable, empathetic support specialist. You check your sources before answering, keep responses concise and jargon-free, and always give the customer a clear next step.",
+  "scriptFile": "main.ts",
+  "schedulingEnabled": false,
+  "iconName": "LifeBuoy",
+  "iconBg": "bg-green-100 group-hover:bg-primary",
+  "iconColor": "text-green-700 group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Support Agent",
+    "description": "Answers customer questions from your knowledge base and rates its own confidence.",
+    "prompt": "Run Support Agent — I'll need a few details from you: what is the customer's question?"
+  },
+  "suggestions": [
+    {
+      "title": "How does it work?",
+      "description": "How does Support Agent work?",
+      "prompt": "How does Support Agent work?"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Support Agent logs",
+      "prompt": "Show Support Agent logs"
+    },
+    {
+      "title": "Run the agent",
+      "description": "Answer a customer support question",
+      "prompt": "Run Support Agent — I'll need a few details from you: what is the customer's question?"
+    },
+    {
+      "title": "What does it need?",
+      "description": "What does Support Agent need to run?",
+      "prompt": "What does Support Agent need to run? List its dependencies, required env vars, and any setup steps."
+    }
+  ],
+  "repos": [],
+  "envVars": [
+    {
+      "id": "097d7062-482c-4681-b249-ec0363f1bb9f",
+      "key": "KNOWLEDGE_BASE_URL",
+      "value": "",
+      "isSecret": false
+    }
+  ],
+  "locked": false
+}

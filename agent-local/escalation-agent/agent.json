@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "escalation-agent",
+  "alias": "esc",
+  "displayName": "Escalation Agent",
+  "description": "Decides whether a customer support conversation should be escalated to a human agent. Evaluates confidence score, sentiment, and issue type. Call after Support Agent with the full context.",
+  "personality": "You are a cautious safety agent. You err on the side of escalation when in doubt — a human touch is better than a wrong answer. You are direct and decisive, never wishy-washy.",
+  "scriptFile": "main.ts",
+  "schedulingEnabled": false,
+  "iconName": "AlertCircle",
+  "iconBg": "bg-red-100 group-hover:bg-primary",
+  "iconColor": "text-red-600 group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Escalation Agent",
+    "description": "Decides if a support conversation needs a human, and generates a warm holding message if so.",
+    "prompt": "Run Escalation Agent — I'll need a few details from you: what is the customer message and confidence score?"
+  },
+  "suggestions": [
+    {
+      "title": "How does it work?",
+      "description": "How does Escalation Agent work?",
+      "prompt": "How does Escalation Agent work?"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Escalation Agent logs",
+      "prompt": "Show Escalation Agent logs"
+    },
+    {
+      "title": "Run the agent",
+      "description": "Check if escalation is needed",
+      "prompt": "Run Escalation Agent — I'll need a few details from you: what is the customer message and the support agent's confidence score?"
+    },
+    {
+      "title": "What does it need?",
+      "description": "What does Escalation Agent need to run?",
+      "prompt": "What does Escalation Agent need to run? List its dependencies, required env vars, and any setup steps."
+    }
+  ],
+  "repos": [],
+  "envVars": [],
+  "locked": false
+}
