@@ -1,4 +1,4 @@
-/** Built-in UserPromptSubmit reminder injected on every sub-agent turn. */
+/** Built-in UserPromptSubmit reminder injected on every sub-agent turn (start mode). */
 export const SUBAGENT_PROMPT_REMINDER = `<reminder>
 - When the user's intent is resolved by SOMETHING BEING DONE: ALWAYS START yourself first (returns runId immediately), tell the user what you've kicked off, then WAIT as a **background Task** concurrently.
 </reminder>`;
@@ -8,11 +8,17 @@ export function buildSubAgentReminder(
   extra?: string,
   memoryDir?: string,
   startToolName?: string,
+  isAskMode?: boolean,
 ): string {
-  const memoryBullet = memoryDir
-    ? `- When the user's intent is resolved by **ASKING A QUESTION NOT ABOUT THIS AGENT** that this agent can answer, you MUST read \`${memoryDir}/memory/MEMORY.md\` first — NEVER skip this step. If memory is sufficient, reply directly. If memory is NOT sufficient → you MUST reply: "Please call \`${startToolName ?? "the start tool"}\` to fulfil this request." Do NOT attempt to answer from general knowledge.`
-    : undefined;
-  const parts = [extra?.trim(), memoryBullet].filter(Boolean).join("\n");
+  if (isAskMode) {
+    const memoryBullet = memoryDir
+      ? `- If the question IS about this agent → answer directly, no memory read needed. If the question is NOT about this agent, you MUST read \`${memoryDir}/memory/MEMORY.md\` first — NEVER skip this step. If memory is sufficient, reply directly. If memory is NOT sufficient → you MUST reply: "Please call \`${startToolName ?? "the start tool"}\` to fulfil this request." Do NOT attempt to answer from general knowledge.`
+      : undefined;
+    const parts = [extra?.trim(), memoryBullet].filter(Boolean).join("\n");
+    return parts ? `<reminder>\n${parts}\n</reminder>` : `<reminder>\n</reminder>`;
+  }
+
+  const parts = extra?.trim();
   if (!parts) return SUBAGENT_PROMPT_REMINDER;
   return SUBAGENT_PROMPT_REMINDER.replace("</reminder>", `\n${parts}\n</reminder>`);
 }

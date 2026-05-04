@@ -132,27 +132,27 @@ describe("buildSubAgentPrompt doveDisplayName", () => {
 });
 
 describe("buildSubAgentReminder memory check", () => {
-  it("injects ASKING A QUESTION bullet when memoryDir is provided", () => {
-    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent");
+  it("injects memory bullet when memoryDir is provided and isAskMode is true", () => {
+    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent", true);
     expect(result).toContain("/state/.my-agent/memory/MEMORY.md");
-    expect(result).toContain("ASKING A QUESTION");
+    expect(result).toContain("MEMORY.md");
     expect(result).toContain("start_my_agent");
   });
 
   it("memory bullet appears inside the reminder tag", () => {
-    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent");
+    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent", true);
     const reminderIdx = result.indexOf("<reminder>");
-    const bulletIdx = result.indexOf("ASKING A QUESTION");
+    const bulletIdx = result.indexOf("MEMORY.md");
     expect(bulletIdx).toBeGreaterThan(reminderIdx);
   });
 
   it("omits memory bullet when memoryDir is absent", () => {
     const result = buildSubAgentReminder();
-    expect(result).not.toContain("ASKING A QUESTION");
+    expect(result).not.toContain("MEMORY.md");
   });
 
   it("memory insufficient path uses MUST language as a hard gate", () => {
-    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent");
+    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent", true);
     expect(result).toContain("MUST");
     expect(result).toContain("NEVER skip");
     expect(result).toContain("start_my_agent");

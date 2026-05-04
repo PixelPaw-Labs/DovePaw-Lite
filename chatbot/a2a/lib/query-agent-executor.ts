@@ -224,6 +224,7 @@ export class QueryAgentExecutor {
                   effectiveDoveSettings(globalSettings).subAgentResponseReminder || undefined,
                   isAskMode ? agentPersistentStateDir(this.def.name) : undefined,
                   isAskMode ? startRunScriptToolName(this.def.manifestKey) : undefined,
+                  isAskMode,
                 ),
                 abortController: this.abortController ?? undefined,
                 permissionMode: "acceptEdits",

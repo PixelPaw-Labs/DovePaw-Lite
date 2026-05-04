@@ -24,11 +24,12 @@ export function buildSubAgentHooks(
   responseReminder?: string,
   memoryDir?: string,
   startToolName?: string,
+  isAskMode?: boolean,
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
   return buildAgentHooks({
     postToolUseMatcher: "mcp__agents__await_.*",
     registry,
-    userPromptReminder: buildSubAgentReminder(behaviorReminder, memoryDir, startToolName),
+    userPromptReminder: buildSubAgentReminder(behaviorReminder, memoryDir, startToolName, isAskMode),
     allowedDirectories: [cwd, ...additionalDirectories],
     disallowedTools: ALWAYS_DISALLOWED_TOOLS,
     responseReminder,
