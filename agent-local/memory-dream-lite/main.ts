@@ -174,9 +174,11 @@ Extract generalizable rules — not chat incidents.
 
 Look for:
 
-1. **User corrections** — things the agent did wrong that the user had to correct
-2. **Domain-specific patterns** — conventions, approaches, gotchas specific to this agent's work
-3. **Workflow preferences** — how the user prefers things done (keep conservative — exclude one-off commands)
+1. **User corrections** — things the agent did wrong that the user had to correct; the correction IS the learning
+2. **Correct answers** — questions the user asked where the answer was confirmed correct (explicit approval or acted upon without pushback); store as a Q&A pair so future turns can answer directly from memory
+3. **Best practices** — approaches that led to successful outcomes; capture the reusable pattern, not the incident
+4. **Domain-specific patterns** — conventions, approaches, gotchas specific to this agent's work
+5. **Workflow preferences** — how the user prefers things done (keep conservative — exclude one-off commands)
 
 ### Abstraction rule (critical)
 
@@ -229,6 +231,7 @@ File names: \`{type}_{descriptive_slug}.md\` (e.g., \`feedback_no_easy_fixes.md\
 - Write topic files using python3: \`python3 -c "open('${memoryDir}/filename.md', 'w').write(content)"\`
 - Update the MEMORY.md index using python3: \`python3 -c "open('${memoryFile}', 'w').write(content)"\`
 - Ensure the memory directory exists: \`python3 -c "import os; os.makedirs('${memoryDir}', exist_ok=True)"\`
+- **NO USER IDENTITY** — never store names, emails, user IDs, or any personally identifiable information. Every memory must be reusable across any user — no references to who said it or who the session belonged to.
 - **DEDUPLICATE** — read ALL existing topic files first. If an existing topic already covers a learning, skip it.
 - **CORRECT CONTRADICTIONS** — if a new learning contradicts an existing topic file, UPDATE that file (newer wins).
 - **MERGE related learnings** — if a new learning extends an existing topic, update that topic file rather than creating a new one.
