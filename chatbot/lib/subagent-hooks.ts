@@ -9,6 +9,7 @@ import type { HookCallbackMatcher, HookEvent } from "@anthropic-ai/claude-agent-
 import { buildAgentHooks } from "@/lib/hooks";
 import type { PendingRegistry } from "@/lib/pending-registry";
 import { SUBAGENT_PROMPT_REMINDER, buildSubAgentReminder } from "@@/lib/subagent-reminder";
+import { ALWAYS_DISALLOWED_TOOLS } from "@@/lib/security-policy";
 
 export { SUBAGENT_PROMPT_REMINDER };
 
@@ -29,6 +30,7 @@ export function buildSubAgentHooks(
     registry,
     userPromptReminder: buildSubAgentReminder(behaviorReminder, memoryDir, startToolName),
     allowedDirectories: [cwd, ...additionalDirectories],
+    disallowedTools: ALWAYS_DISALLOWED_TOOLS,
     responseReminder,
   });
 }

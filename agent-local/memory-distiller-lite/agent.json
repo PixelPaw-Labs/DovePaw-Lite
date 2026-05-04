@@ -1,5 +1,4 @@
 {
-  "version": 1,
   "name": "memory-distiller-lite",
   "alias": "mdi",
   "displayName": "Memory Distiller",
@@ -7,7 +6,7 @@
   "envVars": [],
   "repos": [],
   "schedulingEnabled": true,
-  "doveVisible": false,
+  "doveVisible": true,
   "iconName": "FlaskConical",
   "iconBg": "bg-secondary group-hover:bg-primary",
   "iconColor": "text-muted-foreground group-hover:text-primary-foreground",
@@ -62,5 +61,6 @@
       "instruction": ""
     }
   ],
+  "version": 1,
   "locked": true
 }

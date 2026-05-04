@@ -18,7 +18,7 @@ import type {
   CanUseTool,
 } from "@anthropic-ai/claude-agent-sdk";
 import type { AgentDef } from "@@/lib/agents";
-import { bashHasWriteOperation } from "@@/lib/dove-mode-strategy";
+import { bashHasWriteOperation } from "@@/lib/security-policy";
 import { buildDoveLeanReminder } from "@@/lib/dove-lean-reminder";
 import { doveAwaitToolName } from "@/lib/query-tools";
 import { PendingRegistry, type PendingEntry } from "@/lib/pending-registry";
@@ -283,7 +283,7 @@ export function buildDoveHooks(
     responseReminder?: string;
   } = {},
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
-  return buildAgentHooks({
+  const hooks = buildAgentHooks({
     postToolUseMatcher: agents.map((a) => `mcp__agents__${doveAwaitToolName(a)}`).join("|"),
     registry,
     userPromptReminder: buildDoveLeanReminder(options.behaviorReminder),
@@ -291,6 +291,41 @@ export function buildDoveHooks(
     disallowedTools: options.disallowedTools,
     responseReminder: options.responseReminder,
   });
+
+  // After any ask_* tool call, block and force Dove to decide whether
+  // the result is sufficient or if another agent (e.g. escalation) is needed.
+  const askMatcher = agents.map((a) => `mcp__agents__ask_${a.manifestKey}`).join("|");
+  if (askMatcher) {
+    hooks.PostToolUse = [
+      ...(hooks.PostToolUse ?? []),
+      {
+        matcher: askMatcher,
+        hooks: [
+          async (input) => {
+            if (input.hook_event_name !== "PostToolUse") return { continue: true };
+            return {
+              decision: "block" as const,
+              reason: [
+                "You have received a result from an ask_* tool.",
+                "",
+                "Before responding, reason through the following:",
+                "  1. Is this result sufficient to answer the user's request completely and accurately?",
+                "  2. Does the result indicate low confidence, negative sentiment, or a need for escalation?",
+                "  3. Have all required pipeline steps been completed?",
+                "",
+                "- If YES to (1) and NO to (2) and (3) → reply directly to the user.",
+                "- If NO to (1), or YES to (2) or (3) → call the appropriate next agent first (e.g. start_escalation_agent).",
+                "",
+                "Never respond directly when a follow-up agent call is needed.",
+              ].join("\n"),
+            };
+          },
+        ],
+      },
+    ];
+  }
+
+  return hooks;
 }
 
 /**

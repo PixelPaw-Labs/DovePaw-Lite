@@ -1,5 +1,4 @@
 {
-  "version": 1,
   "name": "memory-dream-lite",
   "alias": "mdr",
   "displayName": "Memory Dream",
@@ -7,7 +6,7 @@
   "envVars": [],
   "repos": [],
   "schedulingEnabled": true,
-  "doveVisible": false,
+  "doveVisible": true,
   "iconName": "Brain",
   "iconBg": "bg-secondary group-hover:bg-primary",
   "iconColor": "text-muted-foreground group-hover:text-primary-foreground",
@@ -61,5 +60,6 @@
       "instruction": ""
     }
   ],
+  "version": 1,
   "locked": true
 }

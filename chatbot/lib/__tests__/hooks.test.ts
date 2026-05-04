@@ -467,6 +467,47 @@ describe("buildSubAgentHooks — UserPromptSubmit reminder", () => {
   });
 });
 
+// ─── buildDoveHooks — PostToolUse ask_* gate ─────────────────────────────────
+
+function doveAskToolInput(toolName: string) {
+  return {
+    hook_event_name: "PostToolUse" as const,
+    tool_name: toolName,
+    tool_input: {},
+    tool_response: "",
+  };
+}
+
+describe("buildDoveHooks — PostToolUse ask_* gate", () => {
+  const minimalAgents = [
+    {
+      name: "support-agent",
+      manifestKey: "support_agent",
+      toolName: "yolo_support_agent",
+    },
+  ] as Parameters<typeof buildDoveHooks>[0];
+
+  it("blocks after ask_* call with block reason", async () => {
+    const hooks = buildDoveHooks(minimalAgents, makeRegistry(), "/cwd", []);
+    // ask_* hook is the second PostToolUse entry (after the await_* hook)
+    const fn = hooks.PostToolUse![1]!.hooks[0]!;
+    const result = await callHook(fn, doveAskToolInput("mcp__agents__ask_support_agent"));
+    expect(result).toMatchObject({ decision: "block" });
+  });
+
+  it("passes through non-PostToolUse events", async () => {
+    const hooks = buildDoveHooks(minimalAgents, makeRegistry(), "/cwd", []);
+    const fn = hooks.PostToolUse![1]!.hooks[0]!;
+    const result = await callHook(fn, {
+      hook_event_name: "PreToolUse" as const,
+      tool_name: "ask_support_agent",
+      tool_input: {},
+      tool_use_id: "x",
+    });
+    expect(result).toEqual({ continue: true });
+  });
+});
+
 // ─── buildDoveCanUseTool ──────────────────────────────────────────────────────
 
 function makeCanUseToolCtx(overrides?: { signal?: AbortSignal }) {

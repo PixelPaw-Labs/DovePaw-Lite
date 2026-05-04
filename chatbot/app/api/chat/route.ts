@@ -19,7 +19,7 @@ import { AGENTS_ROOT, PORTS_FILE } from "@/lib/paths";
 import { readAgentsConfig } from "@@/lib/agents-config";
 import { readSettings } from "@@/lib/settings";
 import { effectiveDoveSettings } from "@@/lib/settings-schemas";
-import { getDoveModeStrategy } from "@@/lib/dove-mode-strategy";
+import { getSecurityModeStrategy, ALWAYS_DISALLOWED_TOOLS } from "@@/lib/security-policy";
 import { resolveSettingsEnv } from "@/lib/env-resolver";
 import type { CollectedStream } from "@/lib/query-tools";
 import { createSseResponse } from "@/lib/sse-response";
@@ -47,7 +47,7 @@ import { z } from "zod";
 
 const chatRequestSchema = z.object({
   message: z.string(),
-  sessionId: z.string().nullable(),
+  sessionId: z.string().nullable().optional().default(null),
 });
 
 export const maxDuration = 86400; // 24 hours for long-running agents
@@ -156,11 +156,12 @@ export async function POST(request: Request) {
         tools,
         async (mcpServer) => {
           const additionalDirectories: string[] = [];
-          const doveStrategy = getDoveModeStrategy(doveSettings.doveMode);
+          const doveStrategy = getSecurityModeStrategy(doveSettings.securityMode);
           // Compose final disallowedTools: mode-based list + web tools (blocked when disabled).
           const disallowedTools = [
             ...doveStrategy.disallowedTools,
             ...(!doveSettings.allowWebTools ? ["WebFetch", "WebSearch"] : []),
+            ...ALWAYS_DISALLOWED_TOOLS,
           ];
           const defaultModel = doveSettings.defaultModel.trim();
           resolvedSessionId = await consumeQueryEvents(

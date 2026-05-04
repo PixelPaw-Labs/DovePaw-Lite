@@ -150,4 +150,12 @@ describe("buildSubAgentReminder memory check", () => {
     const result = buildSubAgentReminder();
     expect(result).not.toContain("ASKING A QUESTION");
   });
+
+  it("memory insufficient path uses MUST language as a hard gate", () => {
+    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent");
+    expect(result).toContain("MUST");
+    expect(result).toContain("NEVER skip");
+    expect(result).toContain("start_my_agent");
+    expect(result).not.toContain("respond with:");
+  });
 });
