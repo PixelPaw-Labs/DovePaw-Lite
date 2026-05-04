@@ -3,10 +3,17 @@ import { readAgentConfigEntries } from "./lib/agents-config.js";
 
 const agentEntries = await readAgentConfigEntries();
 
+// Only bundle agents whose script is TypeScript (scriptFile absent or ending in .ts).
+// Non-TS agents (e.g. Ruby via scriptFile: "main.rb") are executed directly at runtime.
+const tsAgentEntries = agentEntries.filter((a) => !a.scriptFile || a.scriptFile.endsWith(".ts"));
+
 export default defineConfig({
   entry: {
     ...Object.fromEntries(
-      agentEntries.map((a) => [`agents/${a.name}`, `agent-local/${a.name}/main.ts`]),
+      tsAgentEntries.map((a) => {
+        const script = a.scriptFile ?? "main.ts";
+        return [`agents/${a.name}`, `agent-local/${a.name}/${script}`];
+      }),
     ),
     "a2a-trigger": "lib/a2a-trigger.ts",
   },
