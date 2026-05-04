@@ -475,6 +475,8 @@ sequenceDiagram
     note over API: resolve security mode
     API->>SDK: query({ permissionMode, disallowedTools, hooks, canUseTool })
 
+    note over API,canUse: 🔒 Hard security rules (.claude/rules/security.md)<br/>• Never print/echo/log secret values — use variable names only<br/>• Never dump process.env — writes secrets to JSONL history permanently<br/>• Never hardcode secrets — load from env or secure store<br/>• Never log headers, env dumps, or config objects<br/>• Never put secrets in URLs — use headers or request body
+
     loop each tool call
         SDK->>Gate1: check disallowedTools
         alt blocked
