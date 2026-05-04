@@ -5,11 +5,13 @@ import {
   makeTimestamp,
   cleanupOldLogs,
   agentPersistentLogDir,
+  parseRepos,
 } from "@dovepaw/agent-sdk";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 const INSTRUCTION = process.argv[2] || "";
 const WORK_DIR = process.env.AGENT_WORKSPACE!;
+const REPOS = parseRepos("REPO_LIST");
 const LOG_DIR = agentPersistentLogDir("support-agent");
 const LOG_FILE = join(LOG_DIR, `support-agent-${makeTimestamp()}.log`);
 const { log, publishStatusToUI } = createLogger(LOG_DIR, LOG_FILE);
@@ -31,6 +33,7 @@ async function main() {
     cwd: WORK_DIR,
     taskName: "support-agent",
     timeoutMs: 10 * 60 * 1000,
+    additionalDirectories: REPOS,
     claudeOpts: { permissionMode: "acceptEdits" },
     codexOpts: { sandboxMode: "workspace-write" },
   });

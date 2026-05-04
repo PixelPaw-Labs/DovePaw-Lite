@@ -15,18 +15,19 @@ allowed-tools: Read, Bash
 
 ## Inputs (from environment)
 
-- `KNOWLEDGE_BASE_URL` — optional REST API URL. If set and non-empty, search it before answering.
+- `KNOWLEDGE_BASE_URL` — optional REST API URL. If set and non-empty, search it as one source.
 
 ## Task
 
-### Step 1 — Search knowledge base (if available)
+### Step 1 — Gather context from all available sources
 
-If `KNOWLEDGE_BASE_URL` is set:
+Use every source available — do not stop after finding one:
 
-- Form a short search query from the key terms in `$ARGUMENTS`
-- Run: `curl -s "${KNOWLEDGE_BASE_URL}/search?q=<query>"`
-- Use returned articles as your primary source of truth
-- If the API fails or returns no results, fall back to your own knowledge
+- **Repository files** — search the accessible codebase (README files, docs/, API specs, error message strings, config files) for relevant content about the customer's question. This is always available.
+- **Knowledge base URL** — if `KNOWLEDGE_BASE_URL` is set and non-empty, run: `curl -s "${KNOWLEDGE_BASE_URL}/search?q=<short query>"` and include any returned articles.
+- **General knowledge** — fill any remaining gaps with your own knowledge.
+
+Synthesise all sources into one answer. Do not mention which source each piece came from.
 
 ### Step 2 — Draft response
 
