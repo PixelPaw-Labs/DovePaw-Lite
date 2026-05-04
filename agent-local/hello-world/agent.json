@@ -1,12 +1,12 @@
 {
-  "version": 1,
   "name": "hello-world",
   "alias": "hw",
   "displayName": "Hello World",
-  "description": "A minimal example agent. Use it to verify your DovePaw Lite setup is working correctly.",
-  "iconName": "Bot",
+  "description": "A minimal example agent. Use it to verify your DovePaw Lite setup is working correctly. Trigger by requesting \"Hello World\"",
+  "envVars": [],
+  "repos": [],
   "schedulingEnabled": false,
-  "locked": false,
+  "iconName": "Bot",
   "doveCard": {
     "title": "Hello World",
     "description": "Test your DovePaw Lite setup",
@@ -19,6 +19,10 @@
       "prompt": "Say hello!"
     }
   ],
-  "repos": [],
-  "envVars": []
+  "version": 1,
+  "locked": false,
+  "doveVisible": true,
+  "iconBg": "bg-secondary group-hover:bg-primary",
+  "iconColor": "text-muted-foreground group-hover:text-primary-foreground",
+  "scheduledJobs": []
 }

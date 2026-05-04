@@ -4,7 +4,7 @@
 
 ## agent.json Template
 
-Write to `~/.dovepaw-lite/tmp/<name>/agent.json`. Do NOT include `pluginPath` — it is added at publish time.
+Write to `agent-local/<name>/agent.json` in the project repo. Do NOT include `pluginPath`.
 
 ```json
 {

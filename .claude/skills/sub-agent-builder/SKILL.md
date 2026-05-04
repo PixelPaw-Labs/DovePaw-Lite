@@ -16,7 +16,7 @@ hooks:
 
 ## System Requirements
 
-- Read `~/.dovepaw-lite/settings.json` to discover configured repositories before Round 2 questions
+- Read `~/.dovepaw-lite/settings.json` to discover configured repositories before Round 3 questions
 
 ---
 
@@ -24,7 +24,29 @@ hooks:
 
 ### Phase 1 — Requirements Gathering
 
-**Round 1** — parse `$ARGUMENTS` first, then ask 2 questions in a single `AskUserQuestion` call:
+**Round 1** — ask 1 question via `AskUserQuestion`:
+
+1. **Script language** — "Which language should the agent script be written in?" — options:
+   - **TypeScript** (Recommended) — full `@dovepaw/agent-sdk` support, Claude/Codex runner, worktrees, parallel execution
+   - **Python** — entry point `main.py`, spawned with `python3`
+   - **Ruby** — entry point `main.rb`, spawned with `ruby`
+   - **Shell** — entry point `main.sh`, spawned with `bash`
+
+**If the user selects a non-TypeScript language**, warn them:
+
+> ⚠️ The built-in `@dovepaw/agent-sdk` (runner, worktrees, status publishing) is TypeScript-only and will **not** be available. You are responsible for wiring up any AI provider integration (API calls, streaming, etc.) yourself.
+
+Then **skip Phases 2–4 entirely** and go directly to Phase 3 (agent.json) after writing only a minimal hello-world entry script:
+
+```
+agent-local/<name>/main.<ext>   ← prints "Hello from <name>" and exits 0
+```
+
+Set `scriptFile` in `agent.json` to the actual filename (e.g. `"main.py"`). After writing `agent.json`, jump straight to Phase 5.
+
+---
+
+**Round 2** — parse `$ARGUMENTS` first, then ask 2 questions in a single `AskUserQuestion` call _(TypeScript agents only — skip for other languages)_:
 
 1. **Purpose** — "What should this agent do?" — free text via Other
 2. **Agent type** — "Which pattern fits this agent?" — present 4 options with code previews:
@@ -33,7 +55,7 @@ hooks:
    - **Dynamic Skill** — `main.ts` pre-fetches runtime data (PR branches, CI failures, API status), injects it into a temporary skill built in memory, runs Claude, then deletes the skill dir. **Only use when the pre-fetched data must be structurally embedded in the skill body** — not merely for passing the user's instruction through (Static Skill handles that cleanly).
    - **Stateful** — lock + state dir + orchestration (for scheduled agents requiring mutual exclusion)
 
-**Round 2** — read `~/.dovepaw-lite/settings.json`, extract `repositories` array (each has `id`, `path`), then ask 3 questions in a single `AskUserQuestion` call:
+**Round 3** — read `~/.dovepaw-lite/settings.json`, extract `repositories` array (each has `id`, `path`), then ask 3 questions in a single `AskUserQuestion` call:
 
 1. **Schedule** — "Enable scheduled runs?" — options:
    - On-demand only (Recommended) — triggered manually from chatbot
@@ -110,7 +132,7 @@ Before writing any utility code, read `packages/agent-sdk/src/index.ts` to get t
 - **Always provide both `claudeOpts` and `codexOpts`** in every `runner.run()` call — `AgentRunner` picks the active runner's opts and ignores the other. Omitting either means switching `AGENT_SCRIPT_MODEL` leaves the new runner unconfigured (no permission mode, no sandbox).
 - **Before writing runner opts**, ask 1 `AskUserQuestion` with two sub-questions (combine into one call):
   1. **Claude permission mode** — "What level of access does the Claude subagent need?"
-     - `readOnly` — inspect files only, no writes or commands
+     - `default` — inspect files only, no writes or commands (prompts for approval)
      - `acceptEdits` — read + write files, run commands (recommended for most agents)
      - `bypassPermissions` — full autonomy, no prompts at all (for fully automated daemons)
 
@@ -118,7 +140,7 @@ Before writing any utility code, read `packages/agent-sdk/src/index.ts` to get t
      - **Yes** → `sandboxMode: "danger-full-access"` (removes Codex's filesystem boundary so `~/.config/`, `~/.ssh/`, `~/.aws/` are accessible)
      - **No** → `sandboxMode: "workspace-write"` (Codex stays sandboxed to the workspace)
 
-- If repos selected and agent is read-only: pass all repos as `--add-dir` flags: `REPOS.flatMap(r => ["--add-dir", r])`
+- If repos selected and agent uses `default` permission mode: pass all repos as `--add-dir` flags: `REPOS.flatMap(r => ["--add-dir", r])`
 - If repos selected and agent writes to one specific repo: use that repo as cwd with `claudeOpts: { worktree: branch }` — **Claude Code owns the worktree lifecycle**. It creates and removes the worktree automatically. The skill body must NOT contain `git worktree add` or `git worktree remove` commands. Orient the agent in the skill body with: "You are already checked out on branch `<branch>`. Work in the current directory."
 - If repos selected and agent is read-only: pass all repos as `additionalDirectories`; no worktree
 - If the agent processes each repo/target independently (one Claude run per target): **always spawn in parallel with `Promise.all`** — never loop sequentially. Extract a `fixItem(...)` / `processRepo(...)` function and map over entries. See Pattern A (multi-repo) in `references/spawning-patterns.md`.
@@ -309,7 +331,13 @@ Fix any failures before continuing.
 
 ### Phase 5 — Integration Check
 
-Read `references/integration-checklist.md` now for lint/fmt commands and path reference.
+**Non-TypeScript agents** — quick sanity pass only:
+
+- No unsubstituted `{{PLACEHOLDER}}` values remaining
+- `agent.json` has all required fields and no `pluginPath`
+- Every `envVars` entry has an `id` UUID and `value: ""`
+
+**TypeScript agents** — read `references/integration-checklist.md` now for lint/fmt commands and path reference.
 
 Read each created file back and verify against this checklist. Fix any issue found, then re-check until every item passes:
 

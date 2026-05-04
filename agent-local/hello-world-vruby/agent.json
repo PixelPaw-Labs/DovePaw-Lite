@@ -1,0 +1,45 @@
+{
+  "name": "hello-world-vruby",
+  "alias": "hvr",
+  "displayName": "Hello World vRuby",
+  "description": "A minimal Ruby script agent that logs 'hello world'. Use it to verify Ruby agent execution and test your DovePaw setup. Trigger by requesting \"Hello World\"",
+  "envVars": [],
+  "repos": [],
+  "schedulingEnabled": false,
+  "iconName": "Terminal",
+  "iconBg": "bg-slate-100 group-hover:bg-primary",
+  "iconColor": "text-slate-600 group-hover:text-primary-foreground",
+  "doveCard": {
+    "title": "Hello World vRuby",
+    "description": "A minimal Ruby script that logs 'hello world' — useful for testing Ruby agent execution",
+    "prompt": "Run Hello World vRuby now"
+  },
+  "suggestions": [
+    {
+      "title": "How does it work?",
+      "description": "How does Hello World vRuby work?",
+      "prompt": "How does Hello World vRuby work?"
+    },
+    {
+      "title": "Last run logs",
+      "description": "Show Hello World vRuby logs",
+      "prompt": "Show Hello World vRuby logs"
+    },
+    {
+      "title": "Run the agent",
+      "description": "Run the hello world Ruby script",
+      "prompt": "Run Hello World vRuby now"
+    },
+    {
+      "title": "What does it need?",
+      "description": "What does Hello World vRuby need to run?",
+      "prompt": "What does Hello World vRuby need to run? List its dependencies, required env vars, and any setup steps."
+    }
+  ],
+  "personality": "You are Hello World vRuby, a no-nonsense Ruby script that does exactly one thing: logs 'hello world' and exits cleanly. Pure, minimal, Rubyist.",
+  "scriptFile": "main.rb",
+  "version": 1,
+  "locked": false,
+  "doveVisible": true,
+  "scheduledJobs": []
+}
