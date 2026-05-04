@@ -5,9 +5,8 @@
  * (and tests) without pulling in spawning dependencies.
  */
 
-import { join } from "node:path";
 import type { AgentDef } from "@@/lib/agents";
-import { AGENT_LOCAL_DIR } from "@@/lib/paths";
+import { agentEntryPath } from "@@/lib/paths";
 
 export interface AgentConfig {
   scriptPath: string;
@@ -25,7 +24,7 @@ export interface AgentConfig {
  * Build the AgentConfig for a script execution run.
  *
  * Merges workspace-specific env vars (AGENT_WORKSPACE, REPO_LIST) on top of
- * the pre-resolved extraEnv. scriptPath is always agent-local/<name>/main.ts.
+ * the pre-resolved extraEnv. scriptPath is resolved from def.entryPath.
  */
 export function buildAgentConfig(
   def: AgentDef,
@@ -33,7 +32,7 @@ export function buildAgentConfig(
   extraEnv: Record<string, string>,
   repoSlugs: string[],
 ): AgentConfig {
-  const scriptPath = join(AGENT_LOCAL_DIR, def.name, "main.ts");
+  const scriptPath = agentEntryPath(def.entryPath);
   return {
     scriptPath,
     agentName: def.displayName,

@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { extractInstruction } from "../message-parts";
 import { buildScriptArgs } from "../spawn";
 import { startRunScriptToolName, buildSubAgentPrompt } from "@/lib/agent-script-tools";
-import { buildSubAgentReminder } from "@@/lib/subagent-reminder";
+import { withMemoryReminder } from "@@/lib/subagent-reminder";
 import type { AgentDef } from "@@/lib/agents";
 import { Bot } from "lucide-react";
 
@@ -131,28 +131,21 @@ describe("buildSubAgentPrompt doveDisplayName", () => {
   });
 });
 
-describe("buildSubAgentReminder memory check", () => {
-  it("injects memory bullet when memoryDir is provided and isAskMode is true", () => {
-    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent", true);
+describe("withMemoryReminder", () => {
+  it("appends memory bullet to instruction when memoryDir is provided", () => {
+    const result = withMemoryReminder("do the thing", "/state/.my-agent", "start_my_agent");
     expect(result).toContain("/state/.my-agent/memory/MEMORY.md");
     expect(result).toContain("MEMORY.md");
     expect(result).toContain("start_my_agent");
+    expect(result).toContain("do the thing");
   });
 
-  it("memory bullet appears inside the reminder tag", () => {
-    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent", true);
-    const reminderIdx = result.indexOf("<reminder>");
-    const bulletIdx = result.indexOf("MEMORY.md");
-    expect(bulletIdx).toBeGreaterThan(reminderIdx);
+  it("returns instruction unchanged when memoryDir is absent", () => {
+    expect(withMemoryReminder("do the thing")).toBe("do the thing");
   });
 
-  it("omits memory bullet when memoryDir is absent", () => {
-    const result = buildSubAgentReminder();
-    expect(result).not.toContain("MEMORY.md");
-  });
-
-  it("memory insufficient path uses MUST language as a hard gate", () => {
-    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent", true);
+  it("uses MUST language as a hard gate", () => {
+    const result = withMemoryReminder("do the thing", "/state/.my-agent", "start_my_agent");
     expect(result).toContain("MUST");
     expect(result).toContain("NEVER skip");
     expect(result).toContain("start_my_agent");

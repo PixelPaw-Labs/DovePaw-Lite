@@ -14,9 +14,6 @@ import type { PendingRegistry } from "@/lib/pending-registry";
 export const startRunScriptToolName = (manifestKey: string): string => `start_${manifestKey}`;
 /** Tool name for polling a previously started script run (await_run_script_* pattern). */
 export const awaitRunScriptToolName = (manifestKey: string): string => `await_${manifestKey}`;
-/** Appends the standard reminder suffix that forces the agent to call the start tool. */
-export const withStartReminder = (instruction: string, manifestKey: string): string =>
-  `${instruction}\n<reminder>Must call "${startRunScriptToolName(manifestKey)}" tool</reminder>`;
 // ─── Script run tools ─────────────────────────────────────────────────────────
 
 /** Fires the agent script in the background and returns a runId immediately. */

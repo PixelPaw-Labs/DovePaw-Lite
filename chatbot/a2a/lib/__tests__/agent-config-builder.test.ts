@@ -5,7 +5,7 @@ const DEF = {
   name: "my-agent",
   displayName: "My Agent",
   description: "Does things",
-  entryPath: "agents/my-agent/main.ts",
+  entryPath: "agent-local/my-agent/main.ts",
 } as unknown as AgentDef;
 
 const CWD = "/tmp/workspace/my-agent";
