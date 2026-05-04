@@ -71,7 +71,7 @@ agent-local/
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **DovePaw** (4305 symbols, 8384 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **DovePaw-Lite** (3651 symbols, 6885 relationships, 252 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -94,10 +94,10 @@ This project is indexed by GitNexus as **DovePaw** (4305 symbols, 8384 relations
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/DovePaw/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/DovePaw/clusters` | All functional areas |
-| `gitnexus://repo/DovePaw/processes` | All execution flows |
-| `gitnexus://repo/DovePaw/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/DovePaw-Lite/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/DovePaw-Lite/clusters` | All functional areas |
+| `gitnexus://repo/DovePaw-Lite/processes` | All execution flows |
+| `gitnexus://repo/DovePaw-Lite/process/{name}` | Step-by-step execution trace |
 
 ## CLI
 
