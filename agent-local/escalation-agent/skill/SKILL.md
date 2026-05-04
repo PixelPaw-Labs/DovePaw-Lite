@@ -23,18 +23,31 @@ Decide whether to escalate to a human. Escalate if **any** of the following is t
 
 When in doubt, escalate — a human touch is better than a wrong or insufficient answer.
 
+## Support team
+
+When escalating, assign to the best-fit agent based on issue type:
+
+| Agent        | Speciality           | Handles                                                                |
+| ------------ | -------------------- | ---------------------------------------------------------------------- |
+| Alice Chen   | Billing              | Charges, refunds, invoices, chargebacks, payment disputes              |
+| Bob Martinez | Technical Support    | Bugs, installation, product how-to, integrations                       |
+| Carol Lee    | Account Management   | Login, password reset, account suspension, data privacy                |
+| David Kim    | General / Escalation | Anything that doesn't clearly fit above, legal claims, angry customers |
+
+Pick the single best match. If the issue spans multiple categories, assign to David Kim.
+
 ### If escalating
 
-Write a short, warm holding message (1–2 sentences) to display to the customer while they wait for a human agent.
+Write a short, warm holding message (1–2 sentences) addressing the customer by tone (not by name), and mention the agent they're being connected to.
 
 ### If not escalating
 
-Leave `holding_message` as an empty string.
+Leave `holding_message` as an empty string and `assigned_to` as an empty string.
 
 ## Output contract
 
 Output ONLY a JSON object as the last line of your response. No markdown fences, no trailing text after it.
 
 ```
-{"decision": "escalate"|"respond", "reason": "<one sentence>", "holding_message": "<warm message or empty string>"}
+{"decision": "escalate"|"respond", "reason": "<one sentence>", "assigned_to": "<agent name or empty string>", "holding_message": "<warm message or empty string>"}
 ```
