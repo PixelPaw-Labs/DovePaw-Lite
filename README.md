@@ -489,8 +489,6 @@ sequenceDiagram
                 Gate2-->>SDK: deny
             else path outside allowedDirectories
                 Gate2-->>SDK: deny
-            else ScheduleWakeup with pending await_*
-                Gate2-->>SDK: deny
             else passes
                 Gate2-->>SDK: allow
 
