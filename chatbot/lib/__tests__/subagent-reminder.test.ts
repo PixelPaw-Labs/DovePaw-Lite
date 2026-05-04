@@ -25,7 +25,7 @@ describe("withMemoryReminder", () => {
   it("appends memory bullet when memoryDir is provided", () => {
     const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
     expect(result).toContain("do the thing");
-    expect(result).toContain("ASKING A QUESTION NOT ABOUT THIS AGENT");
+    expect(result).toContain("ASKS A QUESTION NOT ABOUT THIS AGENT");
     expect(result).toContain("/some/dir/memory/MEMORY.md");
     expect(result).toContain("start_foo");
   });
