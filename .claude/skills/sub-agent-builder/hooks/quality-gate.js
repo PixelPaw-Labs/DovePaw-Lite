@@ -40,7 +40,9 @@ function isNonTypeScriptAgent() {
         try {
           const mtime = statSync(f).mtimeMs;
           if (mtime > newest.mtime) newest = { ext, mtime };
-        } catch { /* file doesn't exist */ }
+        } catch {
+          /* file doesn't exist */
+        }
       }
     }
     return newest.ext !== ".ts";
