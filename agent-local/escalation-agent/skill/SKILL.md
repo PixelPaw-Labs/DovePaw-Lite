@@ -38,7 +38,7 @@ Pick the single best match. If the issue spans multiple categories, assign to Da
 
 ### If escalating
 
-Write a short, warm holding message (1–2 sentences) addressing the customer by tone (not by name), and mention the agent they're being connected to.
+Write a short, warm holding message (1–2 sentences) addressing the customer by tone (not by name). Include `@<agent name>` (e.g. `@Alice Chen`) so the agent is notified in the chat.
 
 ### If not escalating
 
