@@ -119,6 +119,43 @@ Open the URL printed by Next.js. Dove appears in the sidebar. The `hello-world` 
 
 ---
 
+## Docker (local)
+
+**Prerequisites:** Docker Desktop, [`ejson`](https://github.com/Shopify/ejson) (`brew install ejson`).
+
+**1. Create and encrypt a secrets file**
+
+```bash
+# Generate a keypair — private key saved to ~/.ejson/keys/<pubkey>
+ejson keygen
+
+# Copy the example and fill in your public key + API key
+cp secrets.ejson.example secrets.ejson
+# Edit secrets.ejson: set "_public_key" and plaintext "ANTHROPIC_API_KEY"
+
+ejson encrypt secrets.ejson   # encrypts in place — safe to commit
+```
+
+**2. Build and run**
+
+```bash
+docker compose build
+docker compose up
+```
+
+Open `http://localhost:8473`. Dove is running inside the container using the same agents baked into the image.
+
+**Volumes**
+
+| Volume            | Path in container | Contents                                              |
+| ----------------- | ----------------- | ----------------------------------------------------- |
+| `dovepaw-data`    | `/data`           | Agent settings, port manifests, workspaces, SQLite DB |
+| `claude-sessions` | `/root/.claude`   | Claude Agent SDK session history                      |
+
+Agent scripts and settings are baked into the image at build time. To add or edit agents, rebuild with `docker compose build`.
+
+---
+
 ## Adding an Agent
 
 > **Quickstart:** In Claude Code, run `/sub-agent-builder` to scaffold a new agent interactively — it handles file creation, registration, and skill setup end-to-end.

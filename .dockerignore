@@ -1,0 +1,47 @@
+# Version control
+.git
+.github
+
+# Node dependencies (installed fresh inside Docker for correct platform binaries)
+node_modules
+chatbot/node_modules
+
+# Next.js build artifacts (rebuilt inside Docker)
+chatbot/.next
+
+# Compiled agent bundles (not needed for chatbot/A2A server mode)
+dist/
+*.tsbuildinfo
+
+# Secrets and local env files (never bake into image layers)
+.env
+.env.*
+.envrc
+.claude/settings.local.json
+# secrets.ejson is mounted as a Docker volume at runtime — not baked into image
+secrets.ejson
+
+# OS/IDE noise
+.DS_Store
+**/.DS_Store
+.vscode
+
+# Test output
+coverage
+.nyc_output
+
+# Large media not needed at runtime
+dovepaw-tutorial-animation/
+
+# Electron (desktop app, irrelevant to server mode)
+electron/
+
+# Claude Code local-only state
+.gitnexus
+page-inspector-output/
+
+# Temporary working directories
+.*-tmp/
+state/
+logs/
+design/

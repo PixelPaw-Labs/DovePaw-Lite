@@ -36,6 +36,7 @@
     "plist/**/*.ts",
     "build.ts",
     "scripts/**/*.ts",
+    "docker/**/*.mjs",
     "next.config.ts",
     "vitest.config.ts",
     "chatbot/**/*.ts",

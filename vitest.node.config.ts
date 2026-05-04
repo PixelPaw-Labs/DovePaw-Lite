@@ -22,6 +22,7 @@ export default defineConfig({
   },
   test: {
     include: [
+      "docker/**/*.test.ts",
       "lib/**/*.test.ts",
       "scripts/**/*.test.ts",
       "packages/agent-sdk/src/**/*.test.ts",

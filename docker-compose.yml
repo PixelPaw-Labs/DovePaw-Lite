@@ -1,0 +1,35 @@
+services:
+  dovepaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dovepaw-lite:latest
+    container_name: dovepaw-lite
+    ports:
+      - "8473:8473"
+    environment:
+      NODE_ENV: production
+      HOME: /root
+      SHELL: /bin/bash
+      DOVEPAW_DATA_DIR: /data
+      DOVEPAW_PORT: "8473"
+      # EJSON local mode: tell the entrypoint where the encrypted secrets file is.
+      # Remove this (and the secrets.ejson volume below) when running on ECS —
+      # the ECS task definition injects secrets directly from ASM/SSM.
+      EJSON_FILE: /run/secrets/secrets.ejson
+    volumes:
+      - dovepaw-data:/data
+      - claude-sessions:/root/.claude
+      - ./secrets.ejson:/run/secrets/secrets.ejson:ro
+      - ${HOME}/.ejson:/root/.ejson:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "/app/docker/healthcheck.mjs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  dovepaw-data:
+  claude-sessions:
