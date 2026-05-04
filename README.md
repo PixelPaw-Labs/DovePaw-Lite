@@ -51,14 +51,31 @@ The SDK also provides the `tool()` factory used to define each agent's MCP tools
 
 ## Architecture
 
-```
-Browser (Next.js)
-  ↓ SSE  /api/chat
-Dove — Claude Agent SDK orchestrator
-  ↓ ask_* / start_* / await_* MCP tools
-A2A Servers — one Express process per agent (OS-assigned ports)
-  ↓ spawn (tsx / python3 / ruby / bash)
-Agent Scripts — agent-local/<name>/main.ts (or .py / .rb / .sh)
+```mermaid
+flowchart TD
+    subgraph ui["UI Layer"]
+        Browser["Browser\n(Next.js UI)"]
+    end
+
+    subgraph orchestrator["Orchestrator Layer"]
+        ChatAPI["Next.js — /api/chat\nClaude Agent SDK query()"]
+        MCP["In-process MCP Server\nask_* · start_* · await_*\n(one trio per registered agent)"]
+    end
+
+    subgraph agents["Agent Layer"]
+        A2A["A2A Servers\n(Express · OS-assigned ports)"]
+        Scripts["Agent Scripts\nagent-local/<name>/main.ts\n.ts · .py · .rb · .sh"]
+    end
+
+    subgraph scheduling["Scheduling"]
+        Sched["Scheduler\n(launchd / cron)"]
+    end
+
+    Browser -->|"SSE /api/chat"| ChatAPI
+    ChatAPI --> MCP
+    MCP -->|"A2A SSE"| A2A
+    A2A -->|"spawn\ntsx · python3 · ruby · bash"| Scripts
+    Sched -->|"scheduled trigger"| A2A
 ```
 
 ### How it flows
@@ -442,6 +459,59 @@ Dove operates in one of three modes, configured in Settings → Dove:
 | **read-only**              | `default`           | Blocks all write tools via SDK `disallowedTools` + PreToolUse hooks. Write-capable Bash patterns (redirects, `rm`, `mv`, interpreters) are caught by a secondary regex gate. |
 | **supervised** _(default)_ | `acceptEdits`       | File edits are auto-approved; Bash commands and other tool calls prompt the user in the browser before executing.                                                            |
 | **autonomous**             | `bypassPermissions` | All tool use is auto-approved. Suitable for fully-trusted local use only.                                                                                                    |
+
+### Permission flow
+
+```mermaid
+sequenceDiagram
+    actor User as User (Browser)
+    participant API as Next.js /api/chat
+    participant SDK as Claude Agent SDK
+    participant Gate1 as disallowedTools (gate 1)
+    participant Gate2 as PreToolUse hooks (gate 2)
+    participant canUse as canUseTool callback
+
+    User->>API: POST /api/chat { message }
+    note over API: resolve security mode
+    API->>SDK: query({ permissionMode, disallowedTools, hooks, canUseTool })
+
+    loop each tool call
+        SDK->>Gate1: check disallowedTools
+        alt blocked
+            Gate1-->>SDK: deny
+        else passes
+            Gate1-->>SDK: allow
+            SDK->>Gate2: PreToolUse hook
+
+            alt blocked tool / Bash write (read-only)
+                Gate2-->>SDK: deny
+            else path outside allowedDirectories
+                Gate2-->>SDK: deny
+            else ScheduleWakeup with pending await_*
+                Gate2-->>SDK: deny
+            else passes
+                Gate2-->>SDK: allow
+
+                alt autonomous mode
+                    note over SDK: bypassPermissions — execute directly
+                else supervised mode
+                    SDK->>canUse: can_use_tool?
+                    canUse-->>User: SSE { type: "permission", requestId, toolName }
+                    User->>API: POST /api/chat/permission { requestId, allowed }
+                    alt allowed
+                        canUse-->>SDK: allow
+                    else denied
+                        canUse-->>SDK: deny
+                    end
+                end
+
+                SDK->>SDK: execute tool
+            end
+        end
+    end
+
+    SDK-->>User: SSE stream (text · done · error)
+```
 
 ### PreToolUse hooks (enforcement layer)
 
