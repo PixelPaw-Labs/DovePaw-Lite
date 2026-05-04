@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "name": "memory-distiller",
+  "name": "memory-distiller-lite",
   "alias": "mdi",
   "displayName": "Memory Distiller",
   "description": "Distil and promote common memory patterns across sub-agents into the global ~/.claude/CLAUDE.md. Reads per-agent memory from ~/.dovepaw-lite/agents/state/.<agentName>/memory/ and promotes patterns that appear in 2 or more agents into global rules. Use when asked anything about this agent not limited to — what it does, its status, recent runs, or logs — or when asked to 'consolidate memories', 'promote patterns to global', 'summarize memories to be generic', or 'extract common learnings across agents'.",

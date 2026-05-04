@@ -2,7 +2,7 @@
  * Memory Dream - Extract domain knowledge from sub-agent sessions into per-agent memory.
  * Runs nightly at 00:00 via launchd, or on-demand.
  *
- * Discovers agents from ~/.dovepaw-lite/settings.agents/ (excludes itself and memory-distiller),
+ * Discovers agents from ~/.dovepaw-lite/settings.agents/ (excludes itself and memory-distiller-lite),
  * reads their workspace JSONL sessions directly, and writes learnings to per-agent memory dirs.
  */
 
@@ -33,12 +33,12 @@ import { parseSessionFile, listSessionFiles, discoverWorkspaceSlugs } from "./se
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const HOME = process.env.HOME!;
-const SELF_NAMES = new Set(["memory-dream", "memory-distiller"]);
+const SELF_NAMES = new Set(["memory-dream-lite", "memory-distiller-lite"]);
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const WORK_DIR = process.env.AGENT_WORKSPACE ?? SCRIPT_DIR;
-const LOG_DIR = agentPersistentLogDir("memory-dream");
-const LOG_FILE = join(LOG_DIR, `memory-dream-${makeTimestamp()}.log`);
+const LOG_DIR = agentPersistentLogDir("memory-dream-lite");
+const LOG_FILE = join(LOG_DIR, `memory-dream-lite-${makeTimestamp()}.log`);
 const { log } = createLogger(LOG_DIR, LOG_FILE);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ async function main() {
     const memoryFile = join(memoryDir, "MEMORY.md");
 
     const suffix = randomBytes(3).toString("hex");
-    const skillName = `memory-dream-${agentName}-${suffix}`;
+    const skillName = `memory-dream-lite-${agentName}-${suffix}`;
     const skillDir = join(HOME, ".claude/skills", skillName);
     const skillRefDir = join(skillDir, "references");
     mkdirSync(skillRefDir, { recursive: true });
@@ -157,7 +157,7 @@ async function main() {
         : "  - (none)";
 
     const skillMd = `---
-name: memory-dream-${agentName}
+name: memory-dream-lite-${agentName}
 description: Extract domain knowledge from Claude Code sessions for ${agentName}
 allowed-tools: Read, Edit, Write, Bash(python3 *)
 context: fork
@@ -294,7 +294,7 @@ and replace the inline content with index links. Only include sections that have
     try {
       const { code: exitCode, stdout: claudeOutput } = await runner.run(`/${skillName}`, {
         cwd: WORK_DIR,
-        taskName: "memory-dream",
+        taskName: "memory-dream-lite",
         timeoutMs: 5 * 60 * 60 * 1000,
         claudeOpts: { permissionMode: "acceptEdits" },
       });
@@ -310,7 +310,7 @@ and replace the inline content with index links. Only include sections that have
   /* oxlint-enable no-await-in-loop */
 
   log(`=== Memory Dream finished (processed ${totalSessions} session(s)) ===`);
-  cleanupOldLogs(LOG_DIR, ["memory-dream-"], 30);
+  cleanupOldLogs(LOG_DIR, ["memory-dream-lite-"], 30);
 }
 
 main().catch((err: unknown) => {

@@ -80,15 +80,15 @@ describe("discoverAgentMemories", () => {
   });
 
   it("excludes agents in the excludeNames set", () => {
-    mkdirSync(join(agentSettingsDir, "memory-dream"));
-    mkdirSync(join(agentSettingsDir, "memory-distiller"));
+    mkdirSync(join(agentSettingsDir, "memory-dream-lite"));
+    mkdirSync(join(agentSettingsDir, "memory-distiller-lite"));
     mkdirSync(join(agentSettingsDir, "my-agent"));
-    writeMemory(_stateRoot, "memory-dream", "# Memory");
+    writeMemory(_stateRoot, "memory-dream-lite", "# Memory");
     writeMemory(_stateRoot, "my-agent", "# Memory: my-agent\n\n- learning");
 
     const result = discoverAgentMemories(
       agentSettingsDir,
-      new Set(["memory-dream", "memory-distiller"]),
+      new Set(["memory-dream-lite", "memory-distiller-lite"]),
     );
     expect(result).toHaveLength(1);
     expect(result[0].agentName).toBe("my-agent");

@@ -26,12 +26,12 @@ import {
 const HOME = process.env.HOME!;
 const CLAUDE_MD = join(HOME, ".claude/CLAUDE.md");
 
-const SELF_NAMES = new Set(["memory-dream", "memory-distiller"]);
+const SELF_NAMES = new Set(["memory-dream-lite", "memory-distiller-lite"]);
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const WORK_DIR = process.env.AGENT_WORKSPACE ?? SCRIPT_DIR;
-const LOG_DIR = agentPersistentLogDir("memory-distiller");
-const LOG_FILE = join(LOG_DIR, `memory-distiller-${makeTimestamp()}.log`);
+const LOG_DIR = agentPersistentLogDir("memory-distiller-lite");
+const LOG_FILE = join(LOG_DIR, `memory-distiller-lite-${makeTimestamp()}.log`);
 const { log } = createLogger(LOG_DIR, LOG_FILE);
 
 // ─── Main ───────────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ async function main() {
   }
 
   const suffix = randomBytes(3).toString("hex");
-  const skillName = `memory-distiller-${suffix}`;
+  const skillName = `memory-distiller-lite-${suffix}`;
   const skillDir = join(HOME, ".claude/skills", skillName);
   const skillRefDir = join(skillDir, "references");
   mkdirSync(skillRefDir, { recursive: true });
@@ -91,7 +91,7 @@ async function main() {
     .join("\n");
 
   const skillMd = `---
-name: memory-distiller
+name: memory-distiller-lite
 description: Synthesize sub-agent memories into global CLAUDE.md
 allowed-tools: Read, Edit, Write, Bash(mkdir *), Bash(rm *), Bash(python3 *)
 context: fork
@@ -159,7 +159,7 @@ When removing a promoted entry:
   try {
     const { code: exitCode, stdout: claudeOutput } = await runner.run(`/${skillName}`, {
       cwd: WORK_DIR,
-      taskName: "memory-distiller",
+      taskName: "memory-distiller-lite",
       timeoutMs: 5 * 60 * 60 * 1000,
       claudeOpts: { permissionMode: "acceptEdits" },
     });
@@ -178,7 +178,7 @@ When removing a promoted entry:
   }
 
   log("=== Memory Distiller finished ===");
-  cleanupOldLogs(LOG_DIR, ["memory-distiller-"], 30);
+  cleanupOldLogs(LOG_DIR, ["memory-distiller-lite-"], 30);
 }
 
 main().catch((err: unknown) => {

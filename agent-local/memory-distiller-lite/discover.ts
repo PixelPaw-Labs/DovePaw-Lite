@@ -10,7 +10,7 @@ export interface AgentMemoryInfo {
   topicFiles: Array<{ name: string; path: string; content: string }>;
 }
 
-/** Discover memory directories for all sub-agents (excludes memory-dream and memory-distiller). */
+/** Discover memory directories for all sub-agents (excludes memory-dream-lite and memory-distiller-lite). */
 export function discoverAgentMemories(
   agentSettingsDir: string,
   excludeNames: Set<string>,

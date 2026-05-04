@@ -156,16 +156,18 @@ describe("externalPackagesInBundle (real metafile — all agents)", () => {
     },
   );
 
-  it.skipIf(!existsSync(metafilePath))("memory-dream → no native packages", () => {
-    expect(externalPackagesInBundle("memory-dream", opts)).not.toContain("@ladybugdb/core");
+  it.skipIf(!existsSync(metafilePath))("memory-dream-lite → no native packages", () => {
+    expect(externalPackagesInBundle("memory-dream-lite", opts)).not.toContain("@ladybugdb/core");
   });
 
   it.skipIf(!existsSync(metafilePath))("oncall-analyzer → no native packages", () => {
     expect(externalPackagesInBundle("oncall-analyzer", opts)).not.toContain("@ladybugdb/core");
   });
 
-  it.skipIf(!existsSync(metafilePath))("memory-distiller → no native packages", () => {
-    expect(externalPackagesInBundle("memory-distiller", opts)).not.toContain("@ladybugdb/core");
+  it.skipIf(!existsSync(metafilePath))("memory-distiller-lite → no native packages", () => {
+    expect(externalPackagesInBundle("memory-distiller-lite", opts)).not.toContain(
+      "@ladybugdb/core",
+    );
   });
 
   it.skipIf(!existsSync(metafilePath))("release-log-sentinel → no native packages", () => {

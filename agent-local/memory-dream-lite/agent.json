@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "name": "memory-dream",
+  "name": "memory-dream-lite",
   "alias": "mdr",
   "displayName": "Memory Dream",
   "description": "Dream and consolidate memories from past sub-agent sessions: scans recent workspace JSONL sessions for all registered sub-agents, extracts domain knowledge and workflow patterns, and writes learnings into per-agent memory directories. Use when asked anything about this agent not limited to — what it does, its status, recent runs, or logs — or when asked to 'learn from sessions', 'dream through memories', 'rewind and learn', or 'reflect on past agent work'. Runs nightly automatically.",
