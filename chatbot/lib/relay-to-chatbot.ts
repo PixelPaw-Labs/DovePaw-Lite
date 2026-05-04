@@ -14,7 +14,7 @@ import { consola } from "consola";
 const queues = new Map<string, Promise<void>>();
 
 export function relaySessionEvent(sessionId: string, event: Record<string, unknown>): void {
-  const port = process.env.DOVEPAW_PORT ?? "7473";
+  const port = process.env.DOVEPAW_PORT ?? "8473";
   const prev = queues.get(sessionId) ?? Promise.resolve();
   const next: Promise<void> = prev.then(async () => {
     try {

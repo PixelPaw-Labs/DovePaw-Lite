@@ -33,11 +33,11 @@ export function killServers(): void {
  * Returns the raw ChildProcess so the caller can call unref() to detach
  * and write child.pid to the PID file.
  *
- * @param port  Value forwarded as DOVEPAW_PORT env var (default 7473)
+ * @param port  Value forwarded as DOVEPAW_PORT env var (default 8473)
  * @param stdio "pipe" for log piping, "ignore" for detached API restarts
  */
 export function createServersProcess(
-  port: number = 7473,
+  port: number = 8473,
   stdio: "pipe" | "ignore" = "ignore",
 ): ChildProcess {
   return spawn("npm", ["run", "chatbot:servers"], {

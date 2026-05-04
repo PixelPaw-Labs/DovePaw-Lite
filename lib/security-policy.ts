@@ -121,14 +121,15 @@ export function getSecurityModeStrategy(mode: SecurityMode): SecurityModeStrateg
 /** Tools blocked unconditionally across every agent and every Dove mode. */
 export const ALWAYS_DISALLOWED_TOOLS: string[] = [
   // claude.ai remote MCP integrations — one pattern per service group.
-  "mcp__claude_ai_Assets_.*",
-  "mcp__claude_ai_Gmail_.*",
-  "mcp__claude_ai_Google_Calendar_.*",
-  "mcp__claude_ai_Google_Drive_.*",
-  "mcp__claude_ai_Google_Sheets_.*",
-  "mcp__claude_ai_HubSpot_.*",
-  "mcp__claude_ai_Jira_.*",
-  "mcp__claude_ai_Confluence_.*",
-  "mcp__claude_ai_Slack_.*",
-  "mcp__claude_ai_Slack_Workato_.*",
+  "mcp__claude_ai_Assets__*",
+  "mcp__claude_ai_Gmail__*",
+  "mcp__claude_ai_Google_Calendar__*",
+  "mcp__claude_ai_Google_Drive__*",
+  "mcp__claude_ai_Google_Sheets__*",
+  "mcp__claude_ai_HubSpot__*",
+  "mcp__claude_ai_Jira__*",
+  "mcp__claude_ai_Confluence__*",
+  "mcp__claude_ai_Slack__*",
+  "mcp__claude_ai_Slack_Workato__*",
+  "mcp__claude_ai_Envato_Creative_Companion__*",
 ];

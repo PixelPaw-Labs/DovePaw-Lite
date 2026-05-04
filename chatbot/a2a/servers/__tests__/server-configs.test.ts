@@ -46,7 +46,10 @@ beforeAll(async () => {
 describe("agent script existence", () => {
   it("every agent has a script in its source directory", () => {
     for (const agent of cases) {
-      const scriptPath = resolve(AGENTS_ROOT, `agent-local/${agent.name}/main.ts`);
+      const scriptPath = resolve(
+        AGENTS_ROOT,
+        `agent-local/${agent.name}/${agent.scriptFile ?? "main.ts"}`,
+      );
       expect(existsSync(scriptPath), `${agent.name}: script not found at ${scriptPath}`).toBe(true);
     }
   });
