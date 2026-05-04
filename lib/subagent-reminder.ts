@@ -12,7 +12,7 @@ export function buildSubAgentReminder(
 ): string {
   if (isAskMode) {
     const memoryBullet = memoryDir
-      ? `- If the question IS about this agent → answer directly, no memory read needed. If the question is NOT about this agent, you MUST read \`${memoryDir}/memory/MEMORY.md\` first — NEVER skip this step. If memory is sufficient, reply directly. If memory is NOT sufficient → you MUST reply: "Please call \`${startToolName ?? "the start tool"}\` to fulfil this request." Do NOT attempt to answer from general knowledge.`
+      ? `- When the user's intent is resolved by **ASKING A QUESTION NOT ABOUT THIS AGENT** that this agent can answer, you MUST read \`${memoryDir}/memory/MEMORY.md\` first — NEVER skip this step. If memory is sufficient, reply directly. If memory is NOT sufficient → you MUST reply: "Please call \`${startToolName ?? "the start tool"}\` to fulfil this request." Do NOT attempt to answer from general knowledge.`
       : undefined;
     const parts = [extra?.trim(), memoryBullet].filter(Boolean).join("\n");
     return parts ? `<reminder>\n${parts}\n</reminder>` : `<reminder>\n</reminder>`;
