@@ -554,7 +554,7 @@ Until the user responds, the agent is paused. If the browser disconnects, pendin
 
 ### Sub-agent isolation
 
-Agents launched by Dove run as SDK sub-agents (`permissionMode: "acceptEdits"`) with:
+Agents launched by Dove run as SDK sub-agents with a permission mode inherited from Dove's security mode: `read-only` propagates fully (blocking all writes); `supervised` and `autonomous` both map to `acceptEdits` (no interactive approval UI for sub-agents). With:
 
 - An isolated workspace directory (under `~/.dovepaw-lite/workspaces/`)
 - A scoped `allowedDirectories` list enforced by PreToolUse hooks

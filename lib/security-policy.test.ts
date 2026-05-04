@@ -1,5 +1,48 @@
 import { describe, expect, it } from "vitest";
-import { ALWAYS_DISALLOWED_TOOLS, bashHasWriteOperation } from "./security-policy.js";
+import {
+  ALWAYS_DISALLOWED_TOOLS,
+  bashHasWriteOperation,
+  getSecurityModeStrategy,
+} from "./security-policy.js";
+
+describe("getSecurityModeStrategy", () => {
+  it("read-only: permissionMode is default (blocks writes at SDK level)", () => {
+    const s = getSecurityModeStrategy("read-only");
+    expect(s.permissionMode).toBe("default");
+    expect(s.readOnly).toBe(true);
+    expect(s.allowDangerouslySkipPermissions).toBe(false);
+  });
+
+  it("read-only: disallowedTools includes file write and shell write tools", () => {
+    const s = getSecurityModeStrategy("read-only");
+    expect(s.disallowedTools).toContain("Write");
+    expect(s.disallowedTools).toContain("Edit");
+    expect(s.disallowedTools).toContain("Bash(rm *)");
+    expect(s.disallowedTools).toContain("Bash(mkdir *)");
+  });
+
+  it("supervised: permissionMode is acceptEdits, no disallowedTools", () => {
+    const s = getSecurityModeStrategy("supervised");
+    expect(s.permissionMode).toBe("acceptEdits");
+    expect(s.readOnly).toBe(false);
+    expect(s.disallowedTools).toHaveLength(0);
+  });
+
+  it("autonomous: permissionMode is bypassPermissions, allowDangerouslySkipPermissions true", () => {
+    const s = getSecurityModeStrategy("autonomous");
+    expect(s.permissionMode).toBe("bypassPermissions");
+    expect(s.allowDangerouslySkipPermissions).toBe(true);
+    expect(s.readOnly).toBe(false);
+    expect(s.disallowedTools).toHaveLength(0);
+  });
+
+  it("sub-agent read-only disallowedTools + ALWAYS_DISALLOWED_TOOLS covers write and service tools", () => {
+    const modeTools = getSecurityModeStrategy("read-only").disallowedTools;
+    const merged = [...modeTools, ...ALWAYS_DISALLOWED_TOOLS];
+    expect(merged).toContain("Write");
+    expect(merged).toContain("mcp__claude_ai_Gmail__*");
+  });
+});
 
 describe("ALWAYS_DISALLOWED_TOOLS", () => {
   it("uses glob * syntax, not regex .* syntax", () => {
