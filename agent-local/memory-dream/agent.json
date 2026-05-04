@@ -7,6 +7,7 @@
   "envVars": [],
   "repos": [],
   "schedulingEnabled": true,
+  "doveVisible": false,
   "iconName": "Brain",
   "iconBg": "bg-secondary group-hover:bg-primary",
   "iconColor": "text-muted-foreground group-hover:text-primary-foreground",

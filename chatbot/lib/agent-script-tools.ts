@@ -17,20 +17,6 @@ export const awaitRunScriptToolName = (manifestKey: string): string => `await_${
 /** Appends the standard reminder suffix that forces the agent to call the start tool. */
 export const withStartReminder = (instruction: string, manifestKey: string): string =>
   `${instruction}\n<reminder>Must call "${startRunScriptToolName(manifestKey)}" tool</reminder>`;
-/** Prepends a memory-check instruction: read memory first, reply directly if sufficient, otherwise tell the caller to use the start tool. */
-export const withMemoryReminder = (
-  instruction: string,
-  memoryDir: string,
-  manifestKey: string,
-): string =>
-  `<memory_check>
-If the request is about the agent itself (e.g. status, configuration, management), skip this step.
-Otherwise, read and search ${memoryDir}/memory/MEMORY.md.
-If the file does not exist, or memory is insufficient to answer the user, respond with: "Please call \`${startRunScriptToolName(manifestKey)}\` to fulfil this request."
-If memory is sufficient, reply directly.
-</memory_check>
-${instruction}`;
-
 // ─── Script run tools ─────────────────────────────────────────────────────────
 
 /** Fires the agent script in the background and returns a runId immediately. */
@@ -125,10 +111,11 @@ export function makeAwaitScriptTool(agent: AgentDef, registry?: PendingRegistry)
 // ─── Sub-agent system prompt ───────────────────────────────────────────────────
 
 /** Builds the system prompt appended to the query() sub-agent inside QueryAgentExecutor. */
-export function buildSubAgentPrompt(agent: AgentDef): string {
+export function buildSubAgentPrompt(agent: AgentDef, doveDisplayName?: string): string {
+  const name = doveDisplayName ?? "Dove";
   const opening =
     agent.personality ??
-    "You are one of Dove's mice — a small, focused agent working on behalf of Dove, the orchestrator. Dove delegates tasks to you; your job is to get them done quietly and reliably without second-guessing or over-explaining.";
+    `You are one of ${name}'s mice — a small, focused agent working on behalf of ${name}, the orchestrator. ${name} delegates tasks to you; your job is to get them done quietly and reliably without second-guessing or over-explaining.`;
   return `${opening}
 
 Your assigned role: **${agent.displayName}**
@@ -146,13 +133,8 @@ ${agent.description}
 
 ${
   agent.schedule && agent.schedulingEnabled
-    ? `**Infer intent before acting — read existing output before running anything:**
-
-This agent runs on a schedule (${formatScheduleDisplay(agent.schedule)}) and produces output (files, logs, state) during those runs. Before calling the MCP tool, ask yourself: is the user asking about something that has already happened, or do they want to trigger something new?
-
-- Clearly asking about past/existing state (e.g. past tense, "what happened", "show me logs", "last night's output") → look for existing output first; only run if nothing useful is found
-- Everything else → call \`${startRunScriptToolName(agent.manifestKey)}\` with the instruction as-is; do not ask for clarification`
-    : `**This agent runs on-demand only** — there are no scheduled runs and no past output to look for. When the user's intent is to run this agent, call \`${startRunScriptToolName(agent.manifestKey)}\` directly without looking for prior output.`
+    ? `This agent runs on a schedule (${formatScheduleDisplay(agent.schedule)}) and produces output (files, logs, state) during those runs.`
+    : `This agent runs on-demand only — there are no scheduled runs and no past output to look for.`
 }
 
 **Your file boundaries — only access YOUR files, never other agents':**

@@ -50,6 +50,8 @@ export interface AgentDef {
   envVars?: Record<string, string>;
   /** When false, hidden from Scheduled Agents Management and A2A servers. Defaults to true. */
   schedulingEnabled?: boolean;
+  /** When false, Dove cannot invoke this agent — its ask/start/await MCP tools are not registered. Defaults to true. */
+  doveVisible?: boolean;
   /** Personality paragraph injected at the top of the sub-agent system prompt.
    *  Replaces the generic "You are one of Dove's mice…" line. */
   personality?: string;
@@ -102,6 +104,7 @@ export function buildAgentDef(entry: AgentConfigEntry): AgentDef {
       ? Object.fromEntries(entry.envVars.map(({ key, value }) => [key, value]))
       : undefined,
     schedulingEnabled: entry.schedulingEnabled ?? true,
+    doveVisible: entry.doveVisible ?? true,
     personality: entry.personality,
     scheduledJobs: entry.scheduledJobs,
   };

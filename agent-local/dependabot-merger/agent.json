@@ -1,11 +1,10 @@
 {
-  "version": 1,
   "name": "dependabot-merger",
   "alias": "dm",
   "displayName": "Dependabot Merger",
   "description": "Review, risk-assess, and merge Dependabot PRs across configured repos. Maps each PR to the correct Jira Kanban ticket, prepends [Ticket ID] to the PR title, and merges safe PRs automatically. Reports blockers with risk reasoning and confidence scores. Use when asked anything about this agent not limited to — what it does, its status, recent runs, or logs — or when asked to 'process dependabot PRs', 'merge dependabot', 'triage dependency PRs', or 'review dependency updates'. Pass 'dry-run' to preview without merging. Requires REPO_LIST (local repo paths).",
   "envVars": [],
-  "repos": [],
+  "repos": ["78481769-2021-49eb-84e1-fb661a33b703"],
   "schedulingEnabled": false,
   "iconName": "GitMerge",
   "iconBg": "bg-secondary group-hover:bg-primary",
@@ -60,5 +59,6 @@
       "instruction": ""
     }
   ],
+  "version": 1,
   "locked": false
 }

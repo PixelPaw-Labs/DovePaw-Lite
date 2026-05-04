@@ -8,7 +8,34 @@ import { describe, expect, it } from "vitest";
 // These are pure functions — no mocks needed.
 import { extractInstruction } from "../message-parts";
 import { buildScriptArgs } from "../spawn";
-import { startRunScriptToolName, withMemoryReminder } from "@/lib/agent-script-tools";
+import { startRunScriptToolName, buildSubAgentPrompt } from "@/lib/agent-script-tools";
+import { buildSubAgentReminder } from "@@/lib/subagent-reminder";
+import type { AgentDef } from "@@/lib/agents";
+import { Bot } from "lucide-react";
+
+const minimalAgent = {
+  name: "test-agent",
+  alias: "ta",
+  manifestKey: "test_agent",
+  toolName: "yolo_test_agent",
+  label: "Claude Code Agent - Test Agent",
+  displayName: "Test Agent",
+  description: "A test agent",
+  entryPath: "agent-local/test-agent/main.ts",
+  schedulingEnabled: false,
+  icon: Bot,
+  iconBg: "bg-secondary",
+  iconColor: "text-muted-foreground",
+  doveCard: {
+    title: "Test",
+    description: "Test",
+    prompt: "",
+    icon: Bot,
+    iconBg: "bg-secondary",
+    iconColor: "text-muted-foreground",
+  },
+  suggestions: [],
+} satisfies AgentDef;
 
 const startScriptTool = startRunScriptToolName("test_agent");
 
@@ -84,23 +111,43 @@ describe("buildScriptArgs", () => {
   });
 });
 
-describe("withMemoryReminder", () => {
-  it("prepends memory check block before the instruction", () => {
-    const result = withMemoryReminder("Do the task", "/state/.my-agent", "my_agent");
-    expect(result).toMatch(/^<memory_check>/);
-    expect(result).toContain("/state/.my-agent/memory/MEMORY.md");
-    expect(result).toContain("Do the task");
+describe("buildSubAgentPrompt doveDisplayName", () => {
+  it("defaults to Dove when doveDisplayName is omitted", () => {
+    const result = buildSubAgentPrompt(minimalAgent);
+    expect(result).toContain("Dove");
   });
 
-  it("references the start tool name in the fallback instruction", () => {
-    const result = withMemoryReminder("Do the task", "/state/.my-agent", "my_agent");
+  it("uses provided doveDisplayName in default personality", () => {
+    const result = buildSubAgentPrompt(minimalAgent, "Aria");
+    expect(result).toContain("Aria");
+    expect(result).not.toContain("one of Dove's mice");
+  });
+
+  it("agent personality overrides default and ignores doveDisplayName", () => {
+    const agent: AgentDef = { ...minimalAgent, personality: "Custom personality." };
+    const result = buildSubAgentPrompt(agent, "Aria");
+    expect(result).toContain("Custom personality.");
+    expect(result).not.toContain("Aria's mice");
+  });
+});
+
+describe("buildSubAgentReminder memory check", () => {
+  it("injects ASKING A QUESTION bullet when memoryDir is provided", () => {
+    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent");
+    expect(result).toContain("/state/.my-agent/memory/MEMORY.md");
+    expect(result).toContain("ASKING A QUESTION");
     expect(result).toContain("start_my_agent");
   });
 
-  it("instruction appears after the memory_check block", () => {
-    const result = withMemoryReminder("Do the task", "/state/.my-agent", "my_agent");
-    const instructionIdx = result.indexOf("Do the task");
-    const closingTagIdx = result.indexOf("</memory_check>");
-    expect(instructionIdx).toBeGreaterThan(closingTagIdx);
+  it("memory bullet appears inside the reminder tag", () => {
+    const result = buildSubAgentReminder(undefined, "/state/.my-agent", "start_my_agent");
+    const reminderIdx = result.indexOf("<reminder>");
+    const bulletIdx = result.indexOf("ASKING A QUESTION");
+    expect(bulletIdx).toBeGreaterThan(reminderIdx);
+  });
+
+  it("omits memory bullet when memoryDir is absent", () => {
+    const result = buildSubAgentReminder();
+    expect(result).not.toContain("ASKING A QUESTION");
   });
 });

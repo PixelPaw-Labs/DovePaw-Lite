@@ -23,6 +23,7 @@ import { AgentConfigReader } from "./agent-config-reader";
 import { extractInstruction } from "./message-parts";
 import { buildAgentConfig } from "./agent-config-builder";
 import { buildSubAgentHooks } from "@/lib/subagent-hooks";
+import { AgentCallMode } from "@/lib/query-tools";
 import { PendingRegistry } from "@/lib/pending-registry";
 import { ExecutorPublisher } from "./executor-publisher";
 import { createAgentWorkspace, restoreAgentWorkspace } from "./workspace";
@@ -103,6 +104,7 @@ export class QueryAgentExecutor {
       typeof requestContext.userMessage.metadata?.senderAgentId === "string"
         ? requestContext.userMessage.metadata.senderAgentId
         : undefined;
+    const isAskMode = requestContext.userMessage.metadata?.mode === AgentCallMode.Ask;
     const backgroundTasks: Promise<CollectedStream>[] = [];
 
     // Track direct publishStatusToUI calls (workspace setup, clone progress, etc.)
@@ -199,11 +201,16 @@ export class QueryAgentExecutor {
                 systemPrompt: {
                   type: "preset",
                   preset: "claude_code",
-                  append: buildSubAgentPrompt(this.def),
+                  append: buildSubAgentPrompt(
+                    this.def,
+                    effectiveDoveSettings(globalSettings).displayName,
+                  ),
                 },
                 additionalDirectories,
                 allowedTools: [
-                  `mcp__agents__${startRunScriptToolName(this.def.manifestKey)}`,
+                  ...(!isAskMode
+                    ? [`mcp__agents__${startRunScriptToolName(this.def.manifestKey)}`]
+                    : []),
                   `mcp__agents__${awaitRunScriptToolName(this.def.manifestKey)}`,
                 ],
                 mcpServers: { agents: innerMcpServer },
@@ -213,6 +220,8 @@ export class QueryAgentExecutor {
                   registry,
                   effectiveDoveSettings(globalSettings).subAgentBehaviorReminder || undefined,
                   effectiveDoveSettings(globalSettings).subAgentResponseReminder || undefined,
+                  isAskMode ? agentPersistentStateDir(this.def.name) : undefined,
+                  isAskMode ? startRunScriptToolName(this.def.manifestKey) : undefined,
                 ),
                 abortController: this.abortController ?? undefined,
                 permissionMode: "acceptEdits",

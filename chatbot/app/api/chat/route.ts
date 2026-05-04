@@ -113,7 +113,9 @@ export async function POST(request: Request) {
 
     const backgroundTasks: Promise<CollectedStream>[] = [];
     const doveRegistry = new PendingRegistry();
-    const agents = await readAgentsConfig();
+    const [allAgents, settings] = await Promise.all([readAgentsConfig(), readSettings()]);
+    const agents = allAgents.filter((a) => a.doveVisible !== false);
+    const doveSettings = effectiveDoveSettings(settings);
 
     // On subsequent turns, load the persisted context map for this Dove session.
     // On the first turn (sessionId is null), start fresh — persist() will save it after.
@@ -129,8 +131,14 @@ export async function POST(request: Request) {
     const userMsgId = randomUUID();
 
     const tools = agents.flatMap((agent) => [
-      makeAskTool(agent, subprocessController.signal, ctxMap),
-      makeStartTool(agent, subprocessController.signal, backgroundTasks, doveRegistry),
+      makeAskTool(agent, subprocessController.signal, ctxMap, doveSettings.displayName),
+      makeStartTool(
+        agent,
+        subprocessController.signal,
+        backgroundTasks,
+        doveRegistry,
+        doveSettings.displayName,
+      ),
       makeAwaitTool(agent, subprocessController.signal, doveRegistry),
     ]);
 
@@ -148,8 +156,6 @@ export async function POST(request: Request) {
         tools,
         async (mcpServer) => {
           const additionalDirectories: string[] = [];
-          const settings = await readSettings();
-          const doveSettings = effectiveDoveSettings(settings);
           const doveStrategy = getDoveModeStrategy(doveSettings.doveMode);
           // Compose final disallowedTools: mode-based list + web tools (blocked when disabled).
           const disallowedTools = [

@@ -22,10 +22,15 @@ import {
   isConnectionError,
 } from "@/lib/task-poller";
 import type { PendingRegistry } from "@/lib/pending-registry";
-import { withStartReminder, withMemoryReminder } from "@/lib/agent-script-tools";
-import { agentPersistentStateDir } from "@/lib/paths";
+import { withStartReminder } from "@/lib/agent-script-tools";
 
 // ─── Structured content types ─────────────────────────────────────────────────
+
+export const AgentCallMode = {
+  Ask: "ask",
+  Start: "start",
+} as const;
+export type AgentCallMode = (typeof AgentCallMode)[keyof typeof AgentCallMode];
 
 /** Returned by ask_* tools when a task is successfully submitted. */
 export type TaskStartedContent = {
@@ -75,7 +80,9 @@ export function makeAskTool(
   signal?: AbortSignal,
   /** Per-Dove-session store of manifestKey → agentContextId. Auto-resumes sessions. */
   contextStore?: AgentContextStore,
+  doveDisplayName?: string,
 ) {
+  const orchestratorName = doveDisplayName ?? "Dove";
   return tool(
     doveAskToolName(agent),
     agent.description,
@@ -83,7 +90,7 @@ export function makeAskTool(
       instruction: z
         .string()
         .describe(
-          "Instruction to pass to the agent, synthesized from conversation context. Must open with a self-introduction of the orchestrator, e.g. 'I am Dove, your orchestrator. ' followed by the task instruction.",
+          `Question or query to pose to the agent, synthesized from conversation context. Must open with a self-introduction of the orchestrator, e.g. 'I am ${orchestratorName}, your orchestrator. ' followed by the question or query.`,
         ),
     },
     async ({ instruction }) => {
@@ -100,15 +107,11 @@ export function makeAskTool(
             parts: [
               {
                 kind: "text",
-                text: withMemoryReminder(
-                  instruction,
-                  agentPersistentStateDir(agent.name),
-                  agent.manifestKey,
-                ),
+                text: instruction,
               },
             ],
             ...(contextId ? { contextId } : {}),
-            metadata: { senderAgentId: "dove" },
+            metadata: { senderAgentId: "dove", mode: AgentCallMode.Ask },
           },
           configuration: { blocking: false },
         });
@@ -151,7 +154,9 @@ export function makeStartTool(
   signal?: AbortSignal,
   backgroundTasks?: Promise<CollectedStream>[],
   registry?: PendingRegistry,
+  doveDisplayName?: string,
 ) {
+  const orchestratorName = doveDisplayName ?? "Dove";
   return tool(
     doveStartToolName(agent),
     `Start the ${agent.displayName} agent task and return a taskId immediately without waiting for completion`,
@@ -159,7 +164,7 @@ export function makeStartTool(
       instruction: z
         .string()
         .describe(
-          "Instruction to pass to the agent, synthesized from conversation context. Must open with a self-introduction of the orchestrator, e.g. 'I am Dove, your orchestrator. ' followed by the task instruction.",
+          `Instruction to pass to the agent, synthesized from conversation context. Must open with a self-introduction of the orchestrator, e.g. 'I am ${orchestratorName}, your orchestrator. ' followed by the task instruction.`,
         ),
     },
     async ({ instruction }) => {
@@ -174,6 +179,7 @@ export function makeStartTool(
       ).start(withStartReminder(instruction, agent.manifestKey), {
         backgroundTasks,
         senderAgentId: "dove",
+        extraMetadata: { mode: AgentCallMode.Start },
       });
     },
   );

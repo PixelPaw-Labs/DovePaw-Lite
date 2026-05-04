@@ -13,6 +13,8 @@ import {
   cleanupOldLogs,
   agentPersistentLogDir,
   agentPersistentStateDir,
+  PROJECTS_DIR,
+  AGENT_SETTINGS_DIR,
 } from "@dovepaw/agent-sdk";
 import {
   writeFileSync,
@@ -31,10 +33,6 @@ import { parseSessionFile, listSessionFiles, discoverWorkspaceSlugs } from "./se
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const HOME = process.env.HOME!;
-const PROJECTS_DIR = join(HOME, ".claude/projects");
-const DOVEPAW_DIR = join(HOME, ".dovepaw-lite");
-const AGENT_SETTINGS_DIR = join(DOVEPAW_DIR, "settings.agents");
-
 const SELF_NAMES = new Set(["memory-dream", "memory-distiller"]);
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));

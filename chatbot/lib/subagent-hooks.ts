@@ -21,11 +21,13 @@ export function buildSubAgentHooks(
   registry: PendingRegistry,
   behaviorReminder?: string,
   responseReminder?: string,
+  memoryDir?: string,
+  startToolName?: string,
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
   return buildAgentHooks({
     postToolUseMatcher: "mcp__agents__await_.*",
     registry,
-    userPromptReminder: buildSubAgentReminder(behaviorReminder),
+    userPromptReminder: buildSubAgentReminder(behaviorReminder, memoryDir, startToolName),
     allowedDirectories: [cwd, ...additionalDirectories],
     responseReminder,
   });

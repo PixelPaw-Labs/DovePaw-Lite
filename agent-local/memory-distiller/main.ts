@@ -18,14 +18,13 @@ import {
   makeTimestamp,
   cleanupOldLogs,
   agentPersistentLogDir,
+  AGENT_SETTINGS_DIR,
 } from "@dovepaw/agent-sdk";
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
 const HOME = process.env.HOME!;
 const CLAUDE_MD = join(HOME, ".claude/CLAUDE.md");
-const DOVEPAW_DIR = join(HOME, ".dovepaw-lite");
-const AGENT_SETTINGS_DIR = join(DOVEPAW_DIR, "settings.agents");
 
 const SELF_NAMES = new Set(["memory-dream", "memory-distiller"]);
 
