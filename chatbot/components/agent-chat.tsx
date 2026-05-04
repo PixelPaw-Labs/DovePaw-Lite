@@ -9,6 +9,7 @@ import { ChatPane } from "@/components/agent-chat/chat-pane";
 interface AgentChatProps {
   agentId: string;
   agentConfigs: AgentConfigEntry[];
+  doveDisplayName: string;
   onIsLoadingChange: (loading: boolean) => void;
   onNewSession: (fn: () => void) => void;
 }
@@ -16,6 +17,7 @@ interface AgentChatProps {
 export function AgentChat({
   agentId,
   agentConfigs,
+  doveDisplayName,
   onIsLoadingChange,
   onNewSession,
 }: AgentChatProps) {
@@ -23,6 +25,7 @@ export function AgentChat({
     <AgentChatSession
       agentId={agentId as AgentId}
       agentConfigs={agentConfigs}
+      doveDisplayName={doveDisplayName}
       onIsLoadingChange={onIsLoadingChange}
       onNewSession={onNewSession}
     />
@@ -32,11 +35,13 @@ export function AgentChat({
 function AgentChatSession({
   agentId,
   agentConfigs,
+  doveDisplayName,
   onIsLoadingChange,
   onNewSession,
 }: {
   agentId: AgentId;
   agentConfigs: AgentConfigEntry[];
+  doveDisplayName: string;
   onIsLoadingChange: (loading: boolean) => void;
   onNewSession: (fn: () => void) => void;
 }) {
@@ -65,6 +70,7 @@ function AgentChatSession({
     <ChatPane
       agentId={agentId}
       agentConfigs={agentConfigs}
+      doveDisplayName={doveDisplayName}
       messages={session.messages}
       isLoading={session.isLoading}
       currentSessionId={session.currentSessionId}

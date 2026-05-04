@@ -25,6 +25,7 @@ export function ChatApp({ agentConfigs, initialDoveSettings }: ChatAppProps) {
           key="dove"
           agentId="dove"
           agentConfigs={agentConfigs}
+          doveDisplayName={initialDoveSettings?.displayName ?? "Dove"}
           onIsLoadingChange={(loading) => {
             setIsLoading(loading);
             setDoveIsRunning(loading);
