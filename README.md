@@ -470,12 +470,6 @@ sequenceDiagram
     participant Gate1 as disallowedTools (gate 1)
     participant Gate2 as PreToolUse hooks (gate 2)
     participant canUse as canUseTool callback
-    participant A2A as A2A · QueryAgentExecutor
-    participant Keychain as OS Keychain
-    participant SubAgent as Sub-agent query()
-    participant SubGate as Sub-agent PreToolUse
-    participant Script as Agent Script (main.ts)
-    participant Runner as AgentRunner · ClaudeRunner
 
     User->>API: POST /api/chat { message }
     note over API: resolve security mode
@@ -483,7 +477,7 @@ sequenceDiagram
 
     note over API,canUse: 🔒 Hard security rules (.claude/rules/security.md)<br/>• Never print/echo/log secret values — use variable names only<br/>• Never dump process.env — writes secrets to JSONL history permanently<br/>• Never hardcode secrets — load from env or secure store<br/>• Never log headers, env dumps, or config objects<br/>• Never put secrets in URLs — use headers or request body
 
-    loop each Dove tool call
+    loop each tool call
         SDK->>Gate1: check disallowedTools
         alt blocked
             Gate1-->>SDK: deny
@@ -516,43 +510,6 @@ sequenceDiagram
         end
     end
 
-    note over A2A,Runner: ── Agent Script Security ── (when Dove executes ask_* or start_*)
-
-    SDK->>A2A: A2A SSE { instruction }
-
-    note over A2A,Keychain: Secret resolution — pulled from OS Keychain at spawn time, never persisted to disk
-    A2A->>Keychain: getSecret(service, account) per secret env var
-    Keychain-->>A2A: secret value (in-memory only)
-
-    note over A2A: buildSecurityEnv(securityMode) →<br/>DOVEPAW_SECURITY_MODE · DOVEPAW_DISALLOWED_TOOLS
-    A2A->>SubAgent: query({<br/>  permissionMode: "default" (read-only) · "acceptEdits" (supervised/autonomous)<br/>  disallowedTools: modeTools + ALWAYS_DISALLOWED_TOOLS<br/>  allowedTools: [start_run_script_* · await_run_script_*] only<br/>  env: mergedEnv with DOVEPAW_SECURITY_MODE · DOVEPAW_DISALLOWED_TOOLS<br/>  cwd: ~/.dovepaw-lite/workspaces/agent-uuid/<br/>  additionalDirectories: [logDir · stateDir · configDir · agentSourceDir]<br/>})
-
-    loop each sub-agent tool call
-        SubAgent->>SubGate: PreToolUse hook
-        alt tool in ALWAYS_DISALLOWED_TOOLS
-            note over SubGate: mcp__claude_ai_Gmail_* · mcp__claude_ai_Google_* · mcp__claude_ai_Slack_* · etc.
-            SubGate-->>SubAgent: deny
-        else Edit/Write outside allowedDirectories
-            note over SubGate: allowed: workspace · logDir · stateDir · configDir · agentSourceDir
-            SubGate-->>SubAgent: deny
-        else ScheduleWakeup while await_* pending
-            SubGate-->>SubAgent: deny — poll in-session, never defer
-        else passes
-            SubGate-->>SubAgent: allow
-            SubAgent->>Script: start_run_script_* →<br/>spawn(tsx · python3 · ruby · bash,<br/>[scriptPath, instruction], { env: mergedEnv, cwd: workspacePath, detached: true })
-        end
-    end
-
-    note over Script,Runner: Agent script internal security (when script uses AgentRunner)
-    Script->>Runner: AgentRunner.run(prompt, opts)
-    note over Runner: resolveClaudeSecurityOpts(opts, process.env)<br/>• DOVEPAW_SECURITY_MODE = "read-only" → permissionMode forced to "default"<br/>• DOVEPAW_DISALLOWED_TOOLS → merged with any script-level tool overrides<br/>• Codex: resolveCodexSandboxMode → sandboxMode "read-only" if read-only mode
-    Runner->>Runner: ensureWorktree(cwd, branch)<br/>isolated git worktree at .claude/worktrees/<branch>/<br/>settings.local.json symlinked for local write permission scope
-    Runner->>Runner: ClaudeRunner: query({ permissionMode, disallowedTools, cwd: worktreePath })
-
-    Runner-->>Script: { code, stdout }
-    Script-->>SubAgent: stdout collected via await_run_script_*
-    SubAgent-->>A2A: sub-agent query() completed
-    A2A-->>SDK: A2A SSE result
     SDK-->>User: SSE stream (text · done · error)
 ```
 
