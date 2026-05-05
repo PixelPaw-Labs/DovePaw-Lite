@@ -14,19 +14,47 @@
   <a href=".github/dependabot.yml"><img src="https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot&logoColor=white" alt="Dependabot" /></a>
 </p>
 
-# DovePaw
+# DovePaw Lite
 
-Multi-agent orchestration runtime built on the [Claude Agent SDK](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk). Drop agent scripts into `agent-local/`, run `npm run dev`, and a Dove chatbot immediately surfaces them as conversational tools — no config, no hardcoded ports. Scripts can be TypeScript (`.ts`), Python (`.py`), Ruby (`.rb`), or shell (`.sh`). Schedule agents via macOS launchd or Linux cron, or deploy to ECS with S3-backed config.
+**DovePaw Lite** is a **local multi-agent orchestration runtime for the Claude Agent SDK**.
+
+It provides **Dove**, a Next.js chatbot UI that turns local agent scripts into conversational tools. Drop TypeScript, Python, Ruby, or shell agents into `agent-local/`, run `npm run dev`, and Dove automatically exposes them through MCP tools backed by A2A servers — no hardcoded ports and minimal configuration.
+
+Use DovePaw Lite when you want to:
+
+- Build a local AI agent runtime on top of the Claude Agent SDK
+- Turn scripts into chatbot-accessible agents
+- Orchestrate multiple agents from one Dove conversation
+- Run TypeScript, Python, Ruby, or shell agents
+- Schedule agents with macOS launchd or Linux cron
+- Stream agent progress to a browser over SSE
+- Deploy a lightweight agent runtime with Docker or ECS
 
 <p align="center">
-  <img src="docs/assets/hero-preview.gif" width="720" alt="DovePaw demo" />
+  <img src="docs/assets/hero-preview.gif" width="720" alt="DovePaw Lite Next.js chatbot UI orchestrating local Claude Agent SDK agents" />
 </p>
+
+## Features
+
+- **Claude Agent SDK runtime** — Dove uses `query()` as the stateful agent loop
+- **Next.js chatbot UI** — browser-based chat interface with SSE streaming
+- **Script-based agents** — run `.ts`, `.py`, `.rb`, or `.sh` files as agents
+- **A2A agent servers** — each agent runs behind an Express A2A server
+- **MCP tool injection** — each registered agent becomes `ask_*`, `start_*`, and `await_*` tools
+- **No hardcoded ports** — A2A servers use OS-assigned ports
+- **Scheduling** — run agents through launchd on macOS or cron on Linux
+- **Security modes** — read-only, supervised, and autonomous execution
+- **Docker/ECS deployment** — local Docker support and S3-backed ECS config
+
+## What is DovePaw Lite?
+
+DovePaw Lite is not a hosted agent platform or a general observability system. It is a lightweight local runtime for wiring Claude Agent SDK, MCP tools, A2A agent servers, and script-based agents into one chatbot-driven workflow.
 
 ---
 
 ## Claude Code Agent SDK
 
-Dove is built on the [`@anthropic-ai/claude-agent-sdk`](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk) — the same runtime that powers Claude Code itself.
+Dove, the chatbot inside DovePaw Lite, is built on the [`@anthropic-ai/claude-agent-sdk`](https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk) — the same runtime that powers Claude Code itself.
 
 The SDK's `query()` function runs Dove as a stateful agent loop. It handles the Claude API calls, tool dispatch, and — critically — **conversation memory**. There is no database for chat history in this project. Conversation continuity is entirely managed by the SDK: each turn passes `resume: sessionId` to `query()`, which replays the session from the SDK's own storage under `~/.claude/projects/`. The in-memory store (`db-lite.ts`) only tracks lightweight UI metadata (session status, progress labels) — not message content.
 
@@ -125,7 +153,7 @@ scripts/
 
 > **Full walkthrough:** see [docs/getting-started.md](docs/getting-started.md) for a step-by-step guide with UI screenshots.
 
-**Prerequisites:** Node.js 20+, Claude Code CLI authenticated (or `ANTHROPIC_API_KEY` set).
+**Prerequisites:** Node.js 20+ and Claude Code CLI authenticated, or `ANTHROPIC_API_KEY` set.
 
 ```bash
 npm install
@@ -175,7 +203,17 @@ Agent scripts and settings are baked into the image at build time. To add or edi
 
 ## Adding an Agent
 
-> **Quickstart:** In Claude Code, run `/sub-agent-builder` to scaffold a new agent interactively — it handles file creation, registration, and skill setup end-to-end.
+> **Quickstart:** In Claude Code, run `/sub-agent-builder` to scaffold a new DovePaw Lite agent interactively — it handles file creation, registration, and skill setup end-to-end.
+
+## Related search terms
+
+DovePaw Lite may also be useful if you are looking for a Claude Agent SDK runtime, Claude Code agent orchestration tool, local AI agent runtime, script-based AI agent framework, A2A agent runtime, MCP multi-agent chatbot, scheduled AI agent runner, launchd AI agent scheduler, cron AI agent scheduler, or Next.js AI chatbot for local agents.
+
+## Recommended GitHub topics
+
+Add these topics to the repository to improve discoverability in GitHub search:
+
+`claude-agent-sdk`, `claude-code`, `anthropic`, `multi-agent`, `agent-orchestration`, `ai-agents`, `a2a`, `mcp`, `nextjs`, `typescript`, `nodejs`, `agent-runtime`, `chatbot-ui`, `scheduled-agents`, `cron`, `launchd`, `docker`, `ecs`
 
 To add an agent manually:
 
