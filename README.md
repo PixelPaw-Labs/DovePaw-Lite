@@ -20,6 +20,8 @@
 
 It provides **Dove**, a Next.js chatbot UI that turns local agent scripts into conversational tools. Drop TypeScript, Python, Ruby, or shell agents into `agent-local/`, run `npm run dev`, and Dove automatically exposes them through MCP tools backed by A2A servers — no hardcoded ports and minimal configuration.
 
+DovePaw Lite is built and supported with [**Claude Code Trace**](https://github.com/delexw/claude-code-trace) and [**Codex Trace**](https://github.com/PixelPaw-Labs/codex-trace), session log viewers for debugging Claude Code and Codex CLI workflows.
+
 Use DovePaw Lite when you want to:
 
 - Build a local AI agent runtime on top of the Claude Agent SDK
@@ -49,6 +51,8 @@ Use DovePaw Lite when you want to:
 ## What is DovePaw Lite?
 
 DovePaw Lite is not a hosted agent platform or a general observability system. It is a lightweight local runtime for wiring Claude Agent SDK, MCP tools, A2A agent servers, and script-based agents into one chatbot-driven workflow.
+
+The project is built and supported with [Claude Code Trace](https://github.com/delexw/claude-code-trace) and [Codex Trace](https://github.com/PixelPaw-Labs/codex-trace), which make it easier to inspect agent sessions, understand tool usage, and debug the AI workflows behind the platform.
 
 ---
 
