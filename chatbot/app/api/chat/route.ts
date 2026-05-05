@@ -22,6 +22,7 @@ import { effectiveDoveSettings } from "@@/lib/settings-schemas";
 import { getSecurityModeStrategy, ALWAYS_DISALLOWED_TOOLS } from "@@/lib/security-policy";
 import { resolveSettingsEnv } from "@/lib/env-resolver";
 import type { CollectedStream } from "@/lib/query-tools";
+import { buildStreamSender } from "@/lib/chat-sse";
 import { createSseResponse } from "@/lib/sse-response";
 import {
   makeAskTool,
@@ -48,6 +49,10 @@ import { z } from "zod";
 const chatRequestSchema = z.object({
   message: z.string(),
   sessionId: z.string().nullable().optional().default(null),
+  streamEffort: z.preprocess(
+    (v) => (typeof v === "string" ? v.toLowerCase() : v),
+    z.enum(["low", "high"]).optional().default("high"),
+  ),
 });
 
 export const maxDuration = 86400; // 24 hours for long-running agents
@@ -100,10 +105,10 @@ If a tool reports servers are not running, tell the user to run the appropriate 
 export async function POST(request: Request) {
   // sessionId is null for the first message in a chat, set for all subsequent ones.
   // The hook captures it from the "session" SSE event and sends it back on every request.
-  const { message, sessionId } = chatRequestSchema.parse(await request.json());
+  const { message, sessionId, streamEffort } = chatRequestSchema.parse(await request.json());
 
   const subprocessController = new AbortController();
-  return createSseResponse(request, subprocessController, async (send, _connectionController) => {
+  return createSseResponse(request, subprocessController, async (controller, _connectionController) => {
     // subprocessController is intentionally NOT wired to _connectionController.
     // Browser disconnect / session switch only closes the SSE stream (via connectionController)
     // but leaves the Claude subprocess running as a background session.
@@ -127,7 +132,7 @@ export async function POST(request: Request) {
     // per-session event bus so background reconnect endpoints can replay them.
     // On resume turns the session ID is known immediately; on first turns it is
     // resolved when the "session" SSE event fires (dispatcher buffers and flushes).
-    const dispatcher = new SseQueryDispatcher(send, sessionId ?? undefined);
+    const dispatcher = new SseQueryDispatcher(buildStreamSender(streamEffort, controller), sessionId ?? undefined);
     const userMsgId = randomUUID();
 
     const tools = agents.flatMap((agent) => [

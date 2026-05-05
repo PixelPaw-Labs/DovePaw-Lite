@@ -337,11 +337,12 @@ The chat API is a plain HTTP SSE endpoint. Any frontend — Slack bot, CLI, mobi
 **Request body** (`application/json`):
 
 ```json
-{ "message": "Run the hello-world agent", "sessionId": null }
+{ "message": "Run the hello-world agent", "sessionId": null, "streamEffort": "high" }
 ```
 
 - `message` — the user's text
 - `sessionId` — `null` on the first message; the value from the `session` event on every subsequent message in the same conversation
+- `streamEffort` — `"high"` (default) streams all events in real time; `"low"` suppresses intermediate text/tool/thinking events and emits only the final result, reducing bandwidth for non-interactive callers
 
 **Response:** `text/event-stream`. Each event is a line of the form:
 
