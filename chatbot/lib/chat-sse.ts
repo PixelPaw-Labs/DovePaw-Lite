@@ -91,9 +91,7 @@ export type ChatSseEvent =
  * Emits done.content as a single text event once the result is confirmed clean.
  * Structural events (session, error, cancelled, permission, question) pass through.
  */
-function buildLowEffortSender(
-  send: (event: ChatSseEvent) => void,
-): (event: ChatSseEvent) => void {
+function buildLowEffortSender(send: (event: ChatSseEvent) => void): (event: ChatSseEvent) => void {
   return (event: ChatSseEvent) => {
     if (
       event.type === "text" ||
@@ -105,7 +103,10 @@ function buildLowEffortSender(
       return; // suppress all streaming content
     }
     if (event.type === "done") {
-      if (event.content) { send({ type: "done", content: event.content }); return; } // emit done as a single text event if content is present, otherwise just end the stream
+      if (event.content) {
+        send({ type: "done", content: event.content });
+        return;
+      } // emit done as a single text event if content is present, otherwise just end the stream
       send({ type: "done" });
       return;
     }
