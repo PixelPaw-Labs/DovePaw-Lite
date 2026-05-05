@@ -49,9 +49,10 @@ import { z } from "zod";
 const chatRequestSchema = z.object({
   message: z.string(),
   sessionId: z.string().nullable().optional().default(null),
+  /** When provided, overrides the server-configured streamEffort in Dove settings. */
   streamEffort: z.preprocess(
     (v) => (typeof v === "string" ? v.toLowerCase() : v),
-    z.enum(["low", "high"]).optional().default("high"),
+    z.enum(["none", "low", "high"]).optional(),
   ),
 });
 
@@ -135,8 +136,10 @@ export async function POST(request: Request) {
       // per-session event bus so background reconnect endpoints can replay them.
       // On resume turns the session ID is known immediately; on first turns it is
       // resolved when the "session" SSE event fires (dispatcher buffers and flushes).
+      // API-provided streamEffort takes precedence over the server-configured default.
+      const effectiveEffort = streamEffort ?? doveSettings.streamEffort;
       const dispatcher = new SseQueryDispatcher(
-        buildStreamSender(streamEffort, controller),
+        buildStreamSender(effectiveEffort, controller),
         sessionId ?? undefined,
       );
       const userMsgId = randomUUID();
