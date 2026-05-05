@@ -40,4 +40,16 @@ describe("withMemoryReminder", () => {
     expect(result).toContain("MUST");
     expect(result).toContain("NEVER skip");
   });
+
+  it("instructs agent to skip to NOT SUFFICIENT when MEMORY.md does not exist", () => {
+    const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
+    expect(result).toContain("does not exist");
+    expect(result).toContain("NOT SUFFICIENT");
+  });
+
+  it("requires entire response to be the exact escalation sentence", () => {
+    const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
+    expect(result).toContain("ENTIRE response MUST be this exact sentence");
+    expect(result).toContain("no preamble, no explanation, no extra words");
+  });
 });
