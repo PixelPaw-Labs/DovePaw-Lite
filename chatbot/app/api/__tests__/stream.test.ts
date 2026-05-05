@@ -109,7 +109,7 @@ describe("Mode 1 — live buffer exists", () => {
   it("replays buffered events with seq > after=0", async () => {
     const buffered: ChatSseEvent[] = [
       seqEvent({ type: "session", sessionId: "sess-1" }, 1),
-      seqEvent({ type: "result", content: "hello" }, 2),
+      seqEvent({ type: "text", content: "hello" }, 2),
       seqEvent({ type: "done" }, 3),
     ];
     vi.mocked(getSessionBuffer).mockReturnValue(buffered);
@@ -125,15 +125,15 @@ describe("Mode 1 — live buffer exists", () => {
     expect(events).toContainEqual(
       expect.objectContaining({ type: "session", sessionId: "sess-1" }),
     );
-    expect(events).toContainEqual(expect.objectContaining({ type: "result", content: "hello" }));
+    expect(events).toContainEqual(expect.objectContaining({ type: "text", content: "hello" }));
     // getSessionStatus should NOT be called (short-circuit in Mode 1)
     expect(getSessionStatus).not.toHaveBeenCalled();
   });
 
   it("filters out buffered events with seq <= after", async () => {
     const buffered: ChatSseEvent[] = [
-      seqEvent({ type: "result", content: "old" }, 1),
-      seqEvent({ type: "result", content: "new" }, 2),
+      seqEvent({ type: "text", content: "old" }, 1),
+      seqEvent({ type: "text", content: "new" }, 2),
     ];
     vi.mocked(getSessionBuffer).mockReturnValue(buffered);
     stubSubscribe(buffered);
@@ -145,8 +145,8 @@ describe("Mode 1 — live buffer exists", () => {
     const res = await GET(req, makeParams("sess-1"));
     const events = await collectLiveSseEvents(res, ac);
 
-    expect(events).not.toContainEqual(expect.objectContaining({ type: "result", content: "old" }));
-    expect(events).toContainEqual(expect.objectContaining({ type: "result", content: "new" }));
+    expect(events).not.toContainEqual(expect.objectContaining({ type: "text", content: "old" }));
+    expect(events).toContainEqual(expect.objectContaining({ type: "text", content: "new" }));
   });
 });
 
@@ -159,7 +159,7 @@ describe("Mode 2 — buffer gone, session running", () => {
     vi.mocked(sessionRunner.isRunning).mockReturnValue(true);
   });
 
-  it("sends session + result prefix events from DB before live stream", async () => {
+  it("sends session + text prefix events from DB before live stream", async () => {
     vi.mocked(getSessionDetail).mockReturnValue({
       id: "sess-2",
       agentId: "dove",
@@ -183,12 +183,12 @@ describe("Mode 2 — buffer gone, session running", () => {
     const events = await collectLiveSseEvents(res, ac);
 
     expect(events).toContainEqual({ type: "session", sessionId: "sess-2" });
-    expect(events).toContainEqual({ type: "result", content: "world" });
+    expect(events).toContainEqual({ type: "text", content: "world" });
     // No "done" — stream stays open for live subprocess events
     expect(events).not.toContainEqual({ type: "done" });
   });
 
-  it("skips user message segments — only assistant text becomes result events", async () => {
+  it("skips user message segments — only assistant text becomes text events", async () => {
     vi.mocked(getSessionDetail).mockReturnValue({
       id: "sess-2",
       agentId: "dove",
@@ -211,9 +211,9 @@ describe("Mode 2 — buffer gone, session running", () => {
     const res = await GET(req, makeParams("sess-2"));
     const events = await collectLiveSseEvents(res, ac);
 
-    const resultEvents = events.filter((e) => e.type === "result");
-    expect(resultEvents).toHaveLength(1);
-    expect(resultEvents[0]).toEqual({ type: "result", content: "assistant reply" });
+    const textEvents = events.filter((e) => e.type === "text");
+    expect(textEvents).toHaveLength(1);
+    expect(textEvents[0]).toEqual({ type: "text", content: "assistant reply" });
   });
 
   it("sends only session event when DB has no assistant messages yet", async () => {
@@ -237,7 +237,7 @@ describe("Mode 2 — buffer gone, session running", () => {
     const events = await collectLiveSseEvents(res, ac);
 
     expect(events).toContainEqual({ type: "session", sessionId: "sess-2" });
-    expect(events.filter((e) => e.type === "result")).toHaveLength(0);
+    expect(events.filter((e) => e.type === "text")).toHaveLength(0);
   });
 
   it("sends no prefix events when DB has no detail", async () => {
@@ -265,7 +265,7 @@ describe("Mode 2 — buffer gone, session running", () => {
       progress: [],
       resumeSeq: 0,
     });
-    stubSubscribe([seqEvent({ type: "result", content: "live" }, 1)]);
+    stubSubscribe([seqEvent({ type: "text", content: "live" }, 1)]);
 
     const ac = new AbortController();
     const req = new Request("http://localhost/api/chat/stream/sess-2?after=0", {
@@ -275,8 +275,8 @@ describe("Mode 2 — buffer gone, session running", () => {
     const events = await collectLiveSseEvents(res, ac);
 
     const contents = events
-      .filter((e) => e.type === "result")
-      .map((e) => (e as { type: "result"; content: string }).content);
+      .filter((e) => e.type === "text")
+      .map((e) => (e as { type: "text"; content: string }).content);
     expect(contents).toContain("saved");
     expect(contents).toContain("live");
   });
@@ -301,7 +301,7 @@ describe("Mode 2 — buffer gone, session running", () => {
     // Should synthesize and close (Mode 3 path), not subscribe, not touch status
     expect(subscribeSession).not.toHaveBeenCalled();
     expect(setSessionStatus).not.toHaveBeenCalled();
-    expect(events).toContainEqual({ type: "done" });
+    expect(events).toContainEqual(expect.objectContaining({ type: "done" }));
   });
 });
 
@@ -313,7 +313,7 @@ describe("Mode 3 — buffer gone, session complete", () => {
     vi.mocked(getSessionStatus).mockReturnValue("done");
   });
 
-  it("synthesizes session + result + done from DB and closes immediately", async () => {
+  it("synthesizes session + done(content) from DB and closes immediately", async () => {
     vi.mocked(getSessionDetail).mockReturnValue({
       id: "sess-3",
       agentId: "dove",
@@ -332,8 +332,7 @@ describe("Mode 3 — buffer gone, session complete", () => {
     const events = await collectSseEvents(res);
 
     expect(events).toContainEqual({ type: "session", sessionId: "sess-3" });
-    expect(events).toContainEqual({ type: "result", content: "final answer" });
-    expect(events).toContainEqual({ type: "done" });
+    expect(events).toContainEqual({ type: "done", content: "final answer" });
     expect(subscribeSession).not.toHaveBeenCalled();
   });
 

@@ -243,7 +243,10 @@ export async function POST(request: Request) {
               });
             },
           );
-          dispatcher.publish({ type: "done" });
+          const finalContent = dispatcher.buildFinalContent();
+          dispatcher.publish(
+            finalContent ? { type: "done", content: finalContent } : { type: "done" },
+          );
         },
         (_err, isAbort) => {
           abortPermissions();

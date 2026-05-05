@@ -201,16 +201,20 @@ describe("SseQueryDispatcher", () => {
     expect(send).toHaveBeenCalledWith({ type: "tool_input", content: '{"cmd":"ls"}' });
   });
 
-  it("onFinalOutput sends result event for non-empty string", () => {
+  it("onFinalOutput stores content without emitting (content goes into done)", () => {
     const send = makeSend();
-    new SseQueryDispatcher(send).onFinalOutput("done");
-    expect(send).toHaveBeenCalledWith({ type: "result", content: "done" });
+    const d = new SseQueryDispatcher(send);
+    d.onFinalOutput("done");
+    expect(send).not.toHaveBeenCalled();
+    expect(d.buildFinalContent()).toBe("done");
   });
 
-  it("onFinalOutput does not send for empty string", () => {
+  it("onFinalOutput ignores empty string", () => {
     const send = makeSend();
-    new SseQueryDispatcher(send).onFinalOutput("");
+    const d = new SseQueryDispatcher(send);
+    d.onFinalOutput("");
     expect(send).not.toHaveBeenCalled();
+    expect(d.buildFinalContent()).toBeUndefined();
   });
 
   describe("onArtifact", () => {
@@ -247,10 +251,12 @@ describe("SseQueryDispatcher", () => {
       expect(send).toHaveBeenCalledWith({ type: "tool_input", content: '{"x":1}' });
     });
 
-    it("maps final-output artifact to result event", () => {
+    it("maps final-output artifact to stored content (no emit)", () => {
       const send = makeSend();
-      new SseQueryDispatcher(send).onArtifact(ARTIFACT.FINAL_OUTPUT, "result text");
-      expect(send).toHaveBeenCalledWith({ type: "result", content: "result text" });
+      const d = new SseQueryDispatcher(send);
+      d.onArtifact(ARTIFACT.FINAL_OUTPUT, "result text");
+      expect(send).not.toHaveBeenCalled();
+      expect(d.buildFinalContent()).toBe("result text");
     });
 
     it("ignores unknown artifact names", () => {
@@ -311,17 +317,21 @@ describe("A2AQueryDispatcher", () => {
     expect(pub.publishStatusToUI).not.toHaveBeenCalled();
   });
 
-  it("onFinalOutput publishes final-output artifact (no workflow node)", () => {
+  it("onFinalOutput publishes final-output artifact and stores content", () => {
     const pub = makePublisher();
-    new A2AQueryDispatcher(pub).onFinalOutput("task complete");
+    const d = new A2AQueryDispatcher(pub);
+    d.onFinalOutput("task complete");
     expect(pub.send).toHaveBeenCalledWith("task complete", ARTIFACT.FINAL_OUTPUT);
     expect(pub.publishStatusToUI).not.toHaveBeenCalled();
+    expect(d.buildFinalContent()).toBe("task complete");
   });
 
   it("onFinalOutput skips empty string", () => {
     const pub = makePublisher();
-    new A2AQueryDispatcher(pub).onFinalOutput("");
+    const d = new A2AQueryDispatcher(pub);
+    d.onFinalOutput("");
     expect(pub.send).not.toHaveBeenCalled();
+    expect(d.buildFinalContent()).toBeUndefined();
   });
 
   it("onSession is a no-op", () => {

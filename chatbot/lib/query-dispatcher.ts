@@ -260,6 +260,7 @@ export class SseQueryDispatcher implements QueryResponseDispatcher {
   private readonly accumulator = new MessageAccumulator();
   private sessionId: string | null;
   private readonly preSessionBuffer: ChatSseEvent[] = [];
+  private _finalContent: string | undefined;
 
   constructor(
     private readonly rawSend: (event: ChatSseEvent) => void,
@@ -333,8 +334,12 @@ export class SseQueryDispatcher implements QueryResponseDispatcher {
     this.publish({ type: "tool_input", content });
   }
 
+  buildFinalContent(): string | undefined {
+    return this._finalContent;
+  }
+
   onFinalOutput(result: string): void {
-    if (result) this.publish({ type: "result", content: result });
+    if (result) this._finalContent = result;
     this.accumulator.onFinalOutput();
   }
 
@@ -377,6 +382,7 @@ export class SseQueryDispatcher implements QueryResponseDispatcher {
  */
 export class A2AQueryDispatcher implements QueryResponseDispatcher {
   private readonly accumulator = new MessageAccumulator();
+  private _finalContent: string | undefined;
 
   /**
    * @param publisher   A2A event bus publisher (required)
@@ -447,9 +453,15 @@ export class A2AQueryDispatcher implements QueryResponseDispatcher {
     this.emit({ type: "tool_input", content });
   }
 
+  buildFinalContent(): string | undefined {
+    return this._finalContent;
+  }
+
   onFinalOutput(result: string): void {
-    if (result) this.publisher.send(result, ARTIFACT.FINAL_OUTPUT);
-    if (result) this.emit({ type: "result", content: result });
+    if (result) {
+      this._finalContent = result;
+      this.publisher.send(result, ARTIFACT.FINAL_OUTPUT);
+    }
     this.accumulator.onFinalOutput();
   }
 

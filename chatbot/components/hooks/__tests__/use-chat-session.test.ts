@@ -47,9 +47,7 @@ describe("useChatSession", () => {
   it("sendMessage adds user and assistant messages on success", async () => {
     vi.mocked(fetch)
       // sendMessage POST
-      .mockResolvedValueOnce(
-        makeSseResponse([{ type: "result", content: "pong" }, { type: "done" }]),
-      );
+      .mockResolvedValueOnce(makeSseResponse([{ type: "done", content: "pong" }]));
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -88,8 +86,7 @@ describe("useChatSession", () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       makeSseResponse([
         { type: "session", sessionId: "srv-sess-1" },
-        { type: "result", content: "hi" },
-        { type: "done" },
+        { type: "done", content: "hi" },
       ]),
     );
 
@@ -185,9 +182,7 @@ describe("useChatSession", () => {
   // ─── newSession ─────────────────────────────────────────────────────────────
 
   it("newSession resets all state", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(
-      makeSseResponse([{ type: "result", content: "hi" }, { type: "done" }]),
-    );
+    vi.mocked(fetch).mockResolvedValueOnce(makeSseResponse([{ type: "done", content: "hi" }]));
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -251,9 +246,7 @@ describe("useChatSession", () => {
           { status: 200 },
         ),
       )
-      .mockResolvedValueOnce(
-        makeSseResponse([{ type: "result", content: "running result" }, { type: "done" }]),
-      );
+      .mockResolvedValueOnce(makeSseResponse([{ type: "done", content: "running result" }]));
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -304,9 +297,7 @@ describe("useChatSession", () => {
     });
     vi.mocked(fetch)
       .mockReturnValueOnce(firstPending)
-      .mockResolvedValueOnce(
-        makeSseResponse([{ type: "result", content: "queued reply" }, { type: "done" }]),
-      );
+      .mockResolvedValueOnce(makeSseResponse([{ type: "done", content: "queued reply" }]));
 
     const { result } = renderHook(() => useChatSession("dove"));
 
@@ -320,7 +311,7 @@ describe("useChatSession", () => {
     });
     expect(result.current.pendingQueue).toHaveLength(1);
 
-    resolveFirst(makeSseResponse([{ type: "result", content: "first reply" }, { type: "done" }]));
+    resolveFirst(makeSseResponse([{ type: "done", content: "first reply" }]));
     await waitFor(() => result.current.pendingQueue.length === 0);
     await waitFor(() => !result.current.isLoading);
 

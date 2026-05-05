@@ -353,20 +353,19 @@ Parse each line by stripping the `data: ` prefix and JSON-parsing the remainder.
 
 ### SSE event types
 
-| `type`       | Payload                                      | Action                                                                                           |
-| ------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `session`    | `{ sessionId: string }`                      | **Save this.** Pass it as `sessionId` on every subsequent turn to resume the conversation.       |
-| `text`       | `{ content: string }`                        | Append to the response buffer — Dove's reply arrives as incremental deltas.                      |
-| `thinking`   | `{ content: string }`                        | Extended thinking delta — show or ignore.                                                        |
-| `tool_call`  | `{ name: string }`                           | Dove invoked a tool — informational.                                                             |
-| `tool_input` | `{ content: string }`                        | Tool arguments JSON — informational.                                                             |
-| `result`     | `{ content: string }`                        | Full response text, emitted when no `text` deltas were sent. Use as fallback.                    |
-| `progress`   | `{ result: { output, progress } }`           | Agent task progress — workflow step labels from a downstream agent.                              |
-| `done`       | —                                            | Stream complete. Flush the response buffer.                                                      |
-| `cancelled`  | —                                            | User stopped the turn.                                                                           |
-| `error`      | `{ content: string }`                        | Query failed.                                                                                    |
-| `permission` | `{ requestId, toolName, toolInput, title? }` | Dove needs user approval to use a tool. POST `{ requestId, allowed }` to `/api/chat/permission`. |
-| `question`   | `{ requestId, questions }`                   | Dove is asking clarifying questions. POST `{ requestId, answers }` to `/api/chat/question`.      |
+| `type`       | Payload                                      | Action                                                                                            |
+| ------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `session`    | `{ sessionId: string }`                      | **Save this.** Pass it as `sessionId` on every subsequent turn to resume the conversation.        |
+| `text`       | `{ content: string }`                        | Append to the response buffer — Dove's reply arrives as incremental deltas.                       |
+| `thinking`   | `{ content: string }`                        | Extended thinking delta — show or ignore.                                                         |
+| `tool_call`  | `{ name: string }`                           | Dove invoked a tool — informational.                                                              |
+| `tool_input` | `{ content: string }`                        | Tool arguments JSON — informational.                                                              |
+| `progress`   | `{ result: { output, progress } }`           | Agent task progress — workflow step labels from a downstream agent.                               |
+| `done`       | `{ content?: string }`                       | Stream complete. `content` is set when no `text` deltas were sent — use as the response fallback. |
+| `cancelled`  | —                                            | User stopped the turn.                                                                            |
+| `error`      | `{ content: string }`                        | Query failed.                                                                                     |
+| `permission` | `{ requestId, toolName, toolInput, title? }` | Dove needs user approval to use a tool. POST `{ requestId, allowed }` to `/api/chat/permission`.  |
+| `question`   | `{ requestId, questions }`                   | Dove is asking clarifying questions. POST `{ requestId, answers }` to `/api/chat/question`.       |
 
 ### Stop or delete a session
 
@@ -409,9 +408,10 @@ async function chat(baseUrl: string, message: string, sessionId: string | null) 
 
       if (event.type === "session") nextSessionId = event.sessionId;
       else if (event.type === "text") text += event.content;
-      else if (event.type === "result" && !text) text = event.content;
-      else if (event.type === "done") break;
-      else if (event.type === "error") throw new Error(event.content);
+      else if (event.type === "done") {
+        if (!text && event.content) text = event.content;
+        break;
+      } else if (event.type === "error") throw new Error(event.content);
     }
     buffer = buffer.endsWith("\n\n") ? "" : (buffer.split("\n\n").at(-1) ?? "");
   }
@@ -450,9 +450,11 @@ def chat(base_url: str, message: str, session_id: str | None):
                     next_session_id = event["sessionId"]
                 elif event["type"] == "text":
                     text += event["content"]
-                elif event["type"] == "result" and not text:
-                    text = event["content"]
-                elif event["type"] in ("done", "cancelled"):
+                elif event["type"] == "done":
+                    if not text and event.get("content"):
+                        text = event["content"]
+                    break
+                elif event["type"] == "cancelled":
                     break
                 elif event["type"] == "error":
                     raise RuntimeError(event["content"])
