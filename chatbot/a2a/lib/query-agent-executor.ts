@@ -11,7 +11,11 @@ import { upsertProgressEntry, type ProgressEntry } from "@/lib/progress";
 import { agentPersistentLogDir, agentPersistentStateDir } from "@/lib/paths";
 import { agentConfigDir } from "@@/lib/paths";
 import { readSettings } from "@@/lib/settings";
-import { ALWAYS_DISALLOWED_TOOLS, getSecurityModeStrategy } from "@@/lib/security-policy";
+import {
+  ALWAYS_DISALLOWED_TOOLS,
+  buildSecurityEnv,
+  getSecurityModeStrategy,
+} from "@@/lib/security-policy";
 import { effectiveDoveSettings } from "@@/lib/settings-schemas";
 import {
   makeStartScriptTool,
@@ -160,7 +164,11 @@ export class QueryAgentExecutor {
       const agentConfig = buildAgentConfig(
         this.def,
         cwd,
-        { ...extraEnv, ...(this.port ? { DOVEPAW_A2A_PORT: String(this.port) } : {}) },
+        {
+          ...extraEnv,
+          ...buildSecurityEnv(effectiveDoveSettings(globalSettings).securityMode),
+          ...(this.port ? { DOVEPAW_A2A_PORT: String(this.port) } : {}),
+        },
         repoSlugs,
       );
       const agentSourceDir = dirname(agentConfig.scriptPath);

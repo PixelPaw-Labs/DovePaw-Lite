@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ALWAYS_DISALLOWED_TOOLS,
   bashHasWriteOperation,
+  buildSecurityEnv,
   getSecurityModeStrategy,
 } from "./security-policy.js";
 
@@ -41,6 +42,27 @@ describe("getSecurityModeStrategy", () => {
     const merged = [...modeTools, ...ALWAYS_DISALLOWED_TOOLS];
     expect(merged).toContain("Write");
     expect(merged).toContain("mcp__claude_ai_Gmail__*");
+  });
+});
+
+describe("buildSecurityEnv", () => {
+  it("read-only: sets DOVEPAW_SECURITY_MODE and DOVEPAW_DISALLOWED_TOOLS", () => {
+    const env = buildSecurityEnv("read-only");
+    expect(env.DOVEPAW_SECURITY_MODE).toBe("read-only");
+    expect(env.DOVEPAW_DISALLOWED_TOOLS).toContain("Write");
+    expect(env.DOVEPAW_DISALLOWED_TOOLS).toContain("Edit");
+  });
+
+  it("supervised: sets DOVEPAW_SECURITY_MODE, no DOVEPAW_DISALLOWED_TOOLS", () => {
+    const env = buildSecurityEnv("supervised");
+    expect(env.DOVEPAW_SECURITY_MODE).toBe("supervised");
+    expect(env.DOVEPAW_DISALLOWED_TOOLS).toBeUndefined();
+  });
+
+  it("autonomous: sets DOVEPAW_SECURITY_MODE, no DOVEPAW_DISALLOWED_TOOLS", () => {
+    const env = buildSecurityEnv("autonomous");
+    expect(env.DOVEPAW_SECURITY_MODE).toBe("autonomous");
+    expect(env.DOVEPAW_DISALLOWED_TOOLS).toBeUndefined();
   });
 });
 

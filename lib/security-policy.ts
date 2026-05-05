@@ -84,6 +84,18 @@ const READ_ONLY_DISALLOWED_TOOLS = [
   "EnterWorktree",
 ];
 
+/**
+ * Build env vars to inject into agent script processes so AgentRunner can
+ * apply the same security policy without importing this module directly.
+ */
+export function buildSecurityEnv(mode: SecurityMode): Record<string, string> {
+  const { disallowedTools } = getSecurityModeStrategy(mode);
+  return {
+    DOVEPAW_SECURITY_MODE: mode,
+    ...(disallowedTools.length > 0 ? { DOVEPAW_DISALLOWED_TOOLS: disallowedTools.join(",") } : {}),
+  };
+}
+
 export function getSecurityModeStrategy(mode: SecurityMode): SecurityModeStrategy {
   switch (mode) {
     case "read-only":

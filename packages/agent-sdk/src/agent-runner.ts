@@ -6,12 +6,43 @@ import type { WebSearchMode, SandboxMode, CodexOptions } from "@openai/codex-sdk
 
 interface ClaudeRunOpts {
   permissionMode?: "default" | "acceptEdits" | "bypassPermissions" | "plan" | "dontAsk" | "auto";
+  disallowedTools?: string[];
   worktree?: string;
   sessionId?: string;
   agent?: string;
   effort?: "low" | "medium" | "high" | "xhigh" | "max";
   continueSession?: boolean;
   settingSources?: Array<"user" | "project" | "local">;
+}
+
+/**
+ * Resolve the effective permissionMode and disallowedTools for a Claude run,
+ * merging DOVEPAW_SECURITY_MODE / DOVEPAW_DISALLOWED_TOOLS env vars (injected
+ * by the spawn layer) with caller-provided claudeOpts.
+ *
+ * read-only mode overrides permissionMode to "default" regardless of what the
+ * caller requested — sub-agents have no interactive approval UI so "supervised"
+ * and "autonomous" both map to the caller's value unchanged.
+ */
+export function resolveCodexSandboxMode(
+  codexOpts: CodexOpts | undefined,
+  env: Record<string, string | undefined> = process.env,
+): SandboxMode | undefined {
+  if (env.DOVEPAW_SECURITY_MODE === "read-only") return "read-only";
+  return codexOpts?.sandboxMode;
+}
+
+export function resolveClaudeSecurityOpts(
+  claudeOpts: ClaudeRunOpts | undefined,
+  env: Record<string, string | undefined> = process.env,
+): { permissionMode: ClaudeRunOpts["permissionMode"]; disallowedTools: string[] } {
+  const isReadOnly = env.DOVEPAW_SECURITY_MODE === "read-only";
+  const permissionMode = isReadOnly ? "default" : claudeOpts?.permissionMode;
+  const envTools = env.DOVEPAW_DISALLOWED_TOOLS?.split(",").filter(Boolean) ?? [];
+  return {
+    permissionMode,
+    disallowedTools: [...envTools, ...(claudeOpts?.disallowedTools ?? [])],
+  };
 }
 
 interface CodexOpts {
@@ -80,12 +111,13 @@ export class AgentRunner {
         skipGitRepoCheck: opts.codexOpts?.skipGitRepoCheck,
         webSearchEnabled: opts.codexOpts?.webSearchEnabled,
         webSearchMode: opts.codexOpts?.webSearchMode,
-        sandboxMode: opts.codexOpts?.sandboxMode,
+        sandboxMode: resolveCodexSandboxMode(opts.codexOpts),
       } satisfies CodexRunOpts);
     }
     if (!isClaudeModel(model)) {
       throw new Error(`Unknown model: "${model}". Expected a Claude or Codex model identifier.`);
     }
+    const { permissionMode, disallowedTools } = resolveClaudeSecurityOpts(opts.claudeOpts);
     return new ClaudeRunner(this.logDir, this.logFile ?? "").run(prompt, {
       cwd: opts.cwd,
       taskName: opts.taskName,
@@ -93,7 +125,8 @@ export class AgentRunner {
       ...(model && model !== "claude" ? { model } : {}),
       repos: opts.additionalDirectories,
       apiKey: opts.apiKey,
-      permissionMode: opts.claudeOpts?.permissionMode,
+      permissionMode,
+      ...(disallowedTools.length > 0 ? { disallowedTools } : {}),
       worktree: opts.claudeOpts?.worktree,
       sessionId: opts.claudeOpts?.sessionId,
       resumeSession: opts.resumeSession,
