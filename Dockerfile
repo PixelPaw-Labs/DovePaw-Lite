@@ -1,32 +1,35 @@
 # syntax=docker/dockerfile:1
 
 # ─── Stage 1: builder ────────────────────────────────────────────────────────
-# Builds the Next.js production bundle and installs ejson.
+# Installs deps and copies source. next build runs at container startup (entrypoint.sh)
+# after /data/settings.agents/ is populated by setup.ts.
 # Uses full bookworm (not slim) so native addons and optional deps resolve.
-FROM node:24.14.0-bookworm AS builder
+FROM node:24.15.0-bookworm AS builder
 WORKDIR /app
 
-# Install ejson via the .deb package (curl is available in bookworm)
+# Install ejson via the .deb package (curl is available in bookworm).
+# Optional: if the download fails (e.g. no network access to GitHub), a stub is created
+# so the build succeeds with a warning. ejson features will be unavailable at runtime.
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 ARG EJSON_VERSION=1.5.4
-RUN curl -fsSL \
-    "https://github.com/Shopify/ejson/releases/download/v${EJSON_VERSION}/ejson_${EJSON_VERSION}_linux_amd64.deb" \
+RUN ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL \
+    "https://github.com/Shopify/ejson/releases/download/v${EJSON_VERSION}/ejson_${EJSON_VERSION}_linux_${ARCH}.deb" \
     -o /tmp/ejson.deb \
     && dpkg -i /tmp/ejson.deb \
-    && rm /tmp/ejson.deb
+    && rm /tmp/ejson.deb \
+    || { echo "WARNING: ejson installation failed — ejson will not be available in this image" \
+         && printf '#!/bin/sh\necho "ejson not installed" >&2\nexit 1\n' > /usr/bin/ejson \
+         && chmod +x /usr/bin/ejson; }
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 COPY . .
 
-# Needed by lib/paths.ts and next.config.ts during the build phase
-ENV DOVEPAW_DATA_DIR=/data
-ENV HOME=/root
-
-RUN npm run chatbot:build
-
 # ─── Stage 2: runtime ────────────────────────────────────────────────────────
-FROM node:24.14.0-bookworm-slim AS runtime
+FROM node:24.15.0-bookworm-slim AS runtime
 WORKDIR /app
 
 # apt-get upgrade patches base-image CVEs in packages shipped with bookworm-slim.
@@ -39,20 +42,30 @@ RUN apt-get update \
         libsecret-1-0 \
         git \
         ca-certificates \
+        cron \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy ejson binary from builder — avoids installing curl in the runtime image
+# Copy ejson binary from builder — either the real binary or the stub created on download failure
 COPY --from=builder /usr/bin/ejson /usr/local/bin/ejson
 
-# Re-run npm ci inside the linux/x64 container so platform-specific optional
+# Re-run npm ci inside the linux container so platform-specific optional
 # dependencies resolve correctly:
-#   @anthropic-ai/claude-agent-sdk-linux-x64 (claude CLI binary)
-#   @napi-rs/keyring-linux-x64-gnu
+#   @anthropic-ai/claude-agent-sdk-linux-{arm64,x64} (claude CLI binary)
+#   @napi-rs/keyring-linux-{arm64,x64}-gnu
 # Never copy node_modules from a macOS builder — the platform binaries differ.
 COPY package.json package-lock.json ./
-RUN npm ci
+# --ignore-scripts prevents the project's "install" lifecycle script from running at build time.
+# Remove *-musl SDK packages after install: npm installs both glibc and musl variants on any
+# Linux system (it only checks os/cpu, not libc). The SDK resolver tries musl first; on
+# Debian (glibc) the musl binary's dynamic linker (/lib/ld-musl-*.so.1) is absent, causing
+# "native binary not found" even though the file exists. Removing musl forces the SDK to
+# use the glibc binary, which works correctly on bookworm-slim.
+RUN npm ci --ignore-scripts && \
+    rm -rf node_modules/@anthropic-ai/claude-agent-sdk-linux-arm64-musl \
+           node_modules/@anthropic-ai/claude-agent-sdk-linux-x64-musl && \
+    find node_modules/@anthropic-ai -name "claude" -type f -exec chmod +x {} \;
 
-# Copy built Next.js output and all application source from builder.
+# Copy application source from builder.
 # node_modules is intentionally excluded — we installed it above for linux/x64.
 COPY --from=builder /app/chatbot ./chatbot
 COPY --from=builder /app/lib ./lib
@@ -63,11 +76,16 @@ COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/scheduler-config ./scheduler-config
 COPY --from=builder /app/.claude ./.claude
 COPY --from=builder /app/docker ./docker
+COPY --from=builder /app/tsup.config.ts ./
 COPY --from=builder /app/next.config.ts ./
 COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/postcss.config.mjs ./
 COPY --from=builder /app/components.json ./
 COPY --from=builder /app/package.json ./
+
+COPY --from=builder /app/docker/claude-settings.json /root/.claude/settings.json
+
+RUN node_modules/.bin/next build chatbot
 
 RUN chmod +x /app/docker/entrypoint.sh \
     && mkdir -p /data

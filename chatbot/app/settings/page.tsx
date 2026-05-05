@@ -3,6 +3,7 @@ import { SettingsContent } from "@/components/settings/settings-content";
 import { readSettings, readAgentSettings } from "@@/lib/settings";
 import { readAgentConfigEntries } from "@@/lib/agents-config";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Settings — DovePaw" };
 
 export default async function SettingsPage() {

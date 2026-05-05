@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ChatApp } from "@/components/chat-app";
 import { readAgentConfigEntries } from "@@/lib/agents-config";
 import { readSettings } from "@@/lib/settings";

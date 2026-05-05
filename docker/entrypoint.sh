@@ -25,11 +25,15 @@ if [ -n "${EJSON_FILE:-}" ] && [ -f "${EJSON_FILE}" ]; then
 fi
 
 # ─── Setup ───────────────────────────────────────────────────────────────────
-# Syncs agent.json files, deploys SDK to DOVEPAW_DATA_DIR, links skills.
+# Syncs agent.json files, deploys SDK, links skills, and installs cron entries.
 # Must complete before A2A servers start.
 echo "--- Running setup..."
-node_modules/.bin/tsx scripts/setup.ts
+node_modules/.bin/tsx scripts/setup.ts --install
 echo "--- Setup complete."
+
+# ─── Cron daemon ─────────────────────────────────────────────────────────────
+echo "--- Starting cron daemon..."
+cron
 
 # ─── Start A2A servers ───────────────────────────────────────────────────────
 # Each agent gets an OS-assigned port. A port manifest is written to

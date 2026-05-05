@@ -205,16 +205,6 @@ Agent scripts and settings are baked into the image at build time. To add or edi
 
 > **Quickstart:** In Claude Code, run `/sub-agent-builder` to scaffold a new DovePaw Lite agent interactively — it handles file creation, registration, and skill setup end-to-end.
 
-## Related search terms
-
-DovePaw Lite may also be useful if you are looking for a Claude Agent SDK runtime, Claude Code agent orchestration tool, local AI agent runtime, script-based AI agent framework, A2A agent runtime, MCP multi-agent chatbot, scheduled AI agent runner, launchd AI agent scheduler, cron AI agent scheduler, or Next.js AI chatbot for local agents.
-
-## Recommended GitHub topics
-
-Add these topics to the repository to improve discoverability in GitHub search:
-
-`claude-agent-sdk`, `claude-code`, `anthropic`, `multi-agent`, `agent-orchestration`, `ai-agents`, `a2a`, `mcp`, `nextjs`, `typescript`, `nodejs`, `agent-runtime`, `chatbot-ui`, `scheduled-agents`, `cron`, `launchd`, `docker`, `ecs`
-
 To add an agent manually:
 
 1. Create a directory under `agent-local/`:
