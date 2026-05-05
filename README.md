@@ -470,6 +470,7 @@ sequenceDiagram
     participant Gate1 as disallowedTools (gate 1)
     participant Gate2 as PreToolUse hooks (gate 2)
     participant canUse as canUseTool callback
+    participant Script as Agent Script (main.ts)
 
     User->>API: POST /api/chat { message }
     note over API: resolve security mode
@@ -509,6 +510,11 @@ sequenceDiagram
             end
         end
     end
+
+    note over SDK,Script: when Dove calls ask_* / start_* (agent invocation)
+    SDK->>Script: spawn(tsx · python3 · ruby · bash, [scriptPath, instruction],<br/>{ env: { DOVEPAW_SECURITY_MODE, DOVEPAW_DISALLOWED_TOOLS, AGENT_WORKSPACE, REPO_LIST },<br/>  cwd: isolated workspace, secrets resolved from OS Keychain })
+    note over Script: resolveClaudeSecurityOpts() reads DOVEPAW_SECURITY_MODE<br/>→ enforces permissionMode + disallowedTools on inner query()
+    Script-->>SDK: output via A2A SSE
 
     SDK-->>User: SSE stream (text · done · error)
 ```
