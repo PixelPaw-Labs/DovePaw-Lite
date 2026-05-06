@@ -28,8 +28,6 @@ const CUSTOM_DOVE = {
   allowWebTools: false,
   behaviorReminder: "",
   subAgentBehaviorReminder: "",
-  responseReminder: "",
-  subAgentResponseReminder: "",
 };
 
 beforeEach(() => {

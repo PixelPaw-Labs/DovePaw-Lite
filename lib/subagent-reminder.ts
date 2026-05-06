@@ -3,8 +3,7 @@ export const SUBAGENT_PROMPT_REMINDER = `<reminder>
 - When the user's intent is resolved by SOMETHING BEING DONE: ALWAYS START yourself first (returns runId immediately), tell the user what you've kicked off, then WAIT as a **background Task** concurrently.
 </reminder>`;
 
-function buildMemoryBullet(memoryDir: string, startToolName?: string): string {
-  const escalate = startToolName ?? "the start tool";
+function buildMemoryBullet(memoryDir: string): string {
   return (
     `<reminder>\n` +
     `- MEMORY WORKFLOW — MUST follow every time the user ASKS A QUESTION NOT ABOUT THIS AGENT:\n` +
@@ -15,7 +14,7 @@ function buildMemoryBullet(memoryDir: string, startToolName?: string): string {
     `  3. DETECT sufficiency:\n` +
     `     - SUFFICIENT: memory directly and fully answers the question → reply using it. Do NOT add or invent details beyond what memory says.\n` +
     `     - NOT SUFFICIENT (missing file, missing entry, or partial): your ENTIRE response MUST be this exact sentence — no preamble, no explanation, no extra words before or after:\n` +
-    `       "Memory insufficient — you MUST call \`${escalate}\` to answer this question."\n` +
+    `       "Memory insufficient — you MUST START the agent to answer this question."\n` +
     `</reminder>`
   );
 }
@@ -25,12 +24,8 @@ export const withStartReminder = (instruction: string, manifestKey: string): str
   `${instruction}\n<reminder>Must call "start_${manifestKey}" tool</reminder>`;
 
 /** Appends the ask-mode memory workflow reminder to the instruction. No-op when memoryDir is absent. */
-export const withMemoryReminder = (
-  instruction: string,
-  memoryDir?: string,
-  startToolName?: string,
-): string =>
-  memoryDir ? `${instruction}\n${buildMemoryBullet(memoryDir, startToolName)}` : instruction;
+export const withMemoryReminder = (instruction: string, memoryDir?: string): string =>
+  memoryDir ? `${instruction}\n${buildMemoryBullet(memoryDir)}` : instruction;
 
 /** Returns the sub-agent reminder with optional extra instructions injected inside the <reminder> tag. */
 export function buildSubAgentReminder(extra?: string): string {

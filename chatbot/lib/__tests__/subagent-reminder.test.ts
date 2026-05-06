@@ -23,32 +23,27 @@ describe("withMemoryReminder", () => {
   });
 
   it("appends memory bullet when memoryDir is provided", () => {
-    const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
+    const result = withMemoryReminder("do the thing", "/some/dir");
     expect(result).toContain("do the thing");
     expect(result).toContain("ASKS A QUESTION NOT ABOUT THIS AGENT");
     expect(result).toContain("/some/dir/memory/MEMORY.md");
-    expect(result).toContain("start_foo");
-  });
-
-  it("falls back to 'the start tool' when startToolName is omitted", () => {
-    const result = withMemoryReminder("do the thing", "/some/dir");
-    expect(result).toContain("the start tool");
+    expect(result).toContain("you MUST START the agent");
   });
 
   it("uses hard-gate MUST language", () => {
-    const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
+    const result = withMemoryReminder("do the thing", "/some/dir");
     expect(result).toContain("MUST");
     expect(result).toContain("NEVER skip");
   });
 
   it("instructs agent to skip to NOT SUFFICIENT when MEMORY.md does not exist", () => {
-    const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
+    const result = withMemoryReminder("do the thing", "/some/dir");
     expect(result).toContain("does not exist");
     expect(result).toContain("NOT SUFFICIENT");
   });
 
   it("requires entire response to be the exact escalation sentence", () => {
-    const result = withMemoryReminder("do the thing", "/some/dir", "start_foo");
+    const result = withMemoryReminder("do the thing", "/some/dir");
     expect(result).toContain("ENTIRE response MUST be this exact sentence");
     expect(result).toContain("no preamble, no explanation, no extra words");
   });

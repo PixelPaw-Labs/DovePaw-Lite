@@ -108,11 +108,7 @@ export function makeAskTool(
             parts: [
               {
                 kind: "text",
-                text: withMemoryReminder(
-                  instruction,
-                  agentPersistentStateDir(agent.name),
-                  doveStartToolName(agent),
-                ),
+                text: withMemoryReminder(instruction, agentPersistentStateDir(agent.name)),
               },
             ],
             ...(contextId ? { contextId } : {}),

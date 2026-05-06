@@ -84,6 +84,7 @@ COPY --from=builder /app/components.json ./
 COPY --from=builder /app/package.json ./
 
 COPY --from=builder /app/docker/claude-settings.json /root/.claude/settings.json
+COPY --from=builder /app/.claude/output-styles/ /root/.claude/output-styles/
 
 RUN node_modules/.bin/next build chatbot
 

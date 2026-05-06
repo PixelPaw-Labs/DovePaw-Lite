@@ -189,6 +189,7 @@ export async function POST(request: Request) {
                     DOVEPAW_SUBAGENT: "1",
                   },
                   ...(defaultModel ? { model: defaultModel } : {}),
+                  settings: { outputStyle: "Assistant" },
                   promptSuggestions: true,
                   cwd: AGENTS_ROOT,
                   // Expose the scheduler config directory so Claude can inspect
@@ -220,7 +221,6 @@ export async function POST(request: Request) {
                   hooks: buildDoveHooks(agents, doveRegistry, AGENTS_ROOT, additionalDirectories, {
                     disallowedTools,
                     behaviorReminder: doveSettings.behaviorReminder || undefined,
-                    responseReminder: doveSettings.responseReminder || undefined,
                   }),
                   canUseTool: doveCanUseTool,
                 },

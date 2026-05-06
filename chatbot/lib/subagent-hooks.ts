@@ -18,7 +18,6 @@ export function buildSubAgentHooks(
   additionalDirectories: string[],
   registry: PendingRegistry,
   behaviorReminder?: string,
-  responseReminder?: string,
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
   const trimmed = behaviorReminder?.trim();
   return buildAgentHooks({
@@ -27,6 +26,5 @@ export function buildSubAgentHooks(
     userPromptReminder: trimmed ? `<reminder>\n${trimmed}\n</reminder>` : undefined,
     allowedDirectories: [cwd, ...additionalDirectories],
     disallowedTools: ALWAYS_DISALLOWED_TOOLS,
-    responseReminder,
   });
 }

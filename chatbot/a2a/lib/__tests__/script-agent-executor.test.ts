@@ -133,10 +133,10 @@ describe("buildSubAgentPrompt doveDisplayName", () => {
 
 describe("withMemoryReminder", () => {
   it("appends memory bullet to instruction when memoryDir is provided", () => {
-    const result = withMemoryReminder("do the thing", "/state/.my-agent", "start_my_agent");
+    const result = withMemoryReminder("do the thing", "/state/.my-agent");
     expect(result).toContain("/state/.my-agent/memory/MEMORY.md");
     expect(result).toContain("MEMORY.md");
-    expect(result).toContain("start_my_agent");
+    expect(result).toContain("you MUST START the agent");
     expect(result).toContain("do the thing");
   });
 
@@ -145,10 +145,10 @@ describe("withMemoryReminder", () => {
   });
 
   it("uses MUST language as a hard gate", () => {
-    const result = withMemoryReminder("do the thing", "/state/.my-agent", "start_my_agent");
+    const result = withMemoryReminder("do the thing", "/state/.my-agent");
     expect(result).toContain("MUST");
     expect(result).toContain("NEVER skip");
-    expect(result).toContain("start_my_agent");
+    expect(result).toContain("you MUST START the agent");
     expect(result).not.toContain("respond with:");
   });
 });

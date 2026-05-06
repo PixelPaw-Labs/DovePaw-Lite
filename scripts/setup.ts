@@ -17,6 +17,7 @@ import {
   linkLocalAgentSkills,
   syncAgentLocalToSettings,
   syncClaudeRules,
+  syncOutputStyles,
 } from "../lib/installer.js";
 import { scheduler } from "../lib/scheduler.js";
 
@@ -39,7 +40,12 @@ if (uninstall) {
 
 await deployAgentSdk();
 await linkAgentSdkToAgentLocal();
-await Promise.all([linkLocalAgentSkills(), syncAgentLocalToSettings(), syncClaudeRules()]);
+await Promise.all([
+  linkLocalAgentSkills(),
+  syncAgentLocalToSettings(),
+  syncClaudeRules(),
+  syncOutputStyles(),
+]);
 console.log(`  SDK deployed`);
 
 // ─── Install: compile + register scheduler ───────────────────────────────────
