@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildSubAgentReminder,
-  withMemoryReminder,
-  SUBAGENT_PROMPT_REMINDER,
-} from "@@/lib/subagent-reminder";
+import { buildSubAgentReminder, withMemoryReminder } from "@@/lib/subagent-reminder";
 
 describe("buildSubAgentReminder", () => {
   it("returns the default reminder when no extra is given", () => {
