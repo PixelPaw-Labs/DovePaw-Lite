@@ -142,6 +142,75 @@ describe("linkAgentSdkToAgentLocal", () => {
   });
 });
 
+describe("deployAgentScript", () => {
+  let deployAgentScript: (agentName: string) => Promise<void>;
+  let accessMock: ReturnType<typeof vi.fn>;
+  let copyFileMock: ReturnType<typeof vi.fn>;
+  let chmodMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.resetModules();
+    const mod = await import("../installer.js");
+    deployAgentScript = mod.deployAgentScript;
+    const fs = await import("node:fs/promises");
+    accessMock = vi.mocked(fs.access);
+    copyFileMock = vi.mocked(fs.copyFile);
+    chmodMock = vi.mocked(fs.chmod);
+  });
+
+  it("copies and chmods when compiled output already exists", async () => {
+    accessMock.mockResolvedValue(undefined);
+
+    await deployAgentScript("my-agent");
+
+    expect(exec).not.toHaveBeenCalled();
+    expect(copyFileMock).toHaveBeenCalledOnce();
+    expect(chmodMock).toHaveBeenCalledOnce();
+  });
+
+  it("runs npm run build then copies when compiled output is missing initially", async () => {
+    // First access (pre-build) fails; second access (post-build) succeeds.
+    accessMock.mockRejectedValueOnce(new Error("ENOENT")).mockResolvedValue(undefined);
+    vi.mocked(exec).mockImplementation((_cmd, _opts, cb) => {
+      (cb as unknown as (err: ExecException | null, stdout: string, stderr: string) => void)(
+        null,
+        "",
+        "",
+      );
+      return {} as ReturnType<typeof exec>;
+    });
+
+    await deployAgentScript("my-agent");
+
+    expect(exec).toHaveBeenCalledWith(
+      "npm run build",
+      expect.objectContaining({ cwd: expect.any(String) }),
+      expect.any(Function),
+    );
+    expect(copyFileMock).toHaveBeenCalledOnce();
+    expect(chmodMock).toHaveBeenCalledOnce();
+  });
+
+  it("no-ops for non-TS agents that produce no compiled output after build", async () => {
+    // Both accesses fail — non-TS agent has no .mjs output.
+    accessMock.mockRejectedValue(new Error("ENOENT"));
+    vi.mocked(exec).mockImplementation((_cmd, _opts, cb) => {
+      (cb as unknown as (err: ExecException | null, stdout: string, stderr: string) => void)(
+        null,
+        "",
+        "",
+      );
+      return {} as ReturnType<typeof exec>;
+    });
+
+    await deployAgentScript("shell-agent");
+
+    expect(copyFileMock).not.toHaveBeenCalled();
+    expect(chmodMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("deployTriggerScript", () => {
   let deployTriggerScript: () => Promise<void>;
 
