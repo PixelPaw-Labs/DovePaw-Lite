@@ -382,7 +382,7 @@ describe("buildSubAgentHooks — UserPromptSubmit reminder", () => {
     const fn = hooks.UserPromptSubmit![0]!.hooks[0]!;
     const result = await callHook(fn, { hook_event_name: "UserPromptSubmit", prompt: "do it" });
     const { hookSpecificOutput } = result as { hookSpecificOutput: { additionalContext: string } };
-    expect(hookSpecificOutput.additionalContext).toContain("ALWAYS START yourself first");
+    expect(hookSpecificOutput.additionalContext).toContain("ALWAYS call `start_*` first");
   });
 
   it("always injects SUBAGENT_PROMPT_REMINDER when behaviorReminder is empty", async () => {
@@ -390,7 +390,7 @@ describe("buildSubAgentHooks — UserPromptSubmit reminder", () => {
     const fn = hooks.UserPromptSubmit![0]!.hooks[0]!;
     const result = await callHook(fn, { hook_event_name: "UserPromptSubmit", prompt: "do it" });
     const { hookSpecificOutput } = result as { hookSpecificOutput: { additionalContext: string } };
-    expect(hookSpecificOutput.additionalContext).toContain("ALWAYS START yourself first");
+    expect(hookSpecificOutput.additionalContext).toContain("ALWAYS call `start_*` first");
   });
 
   it("injects SUBAGENT_PROMPT_REMINDER with behaviorReminder inside <reminder> tag", async () => {
@@ -398,10 +398,10 @@ describe("buildSubAgentHooks — UserPromptSubmit reminder", () => {
     const fn = hooks.UserPromptSubmit![0]!.hooks[0]!;
     const result = await callHook(fn, { hook_event_name: "UserPromptSubmit", prompt: "do it" });
     const { hookSpecificOutput } = result as { hookSpecificOutput: { additionalContext: string } };
-    expect(hookSpecificOutput.additionalContext).toContain("ALWAYS START yourself first");
+    expect(hookSpecificOutput.additionalContext).toContain("ALWAYS call `start_*` first");
     expect(hookSpecificOutput.additionalContext).toContain("Check memory before MCP tools.");
     expect(
-      hookSpecificOutput.additionalContext.indexOf("ALWAYS START yourself first"),
+      hookSpecificOutput.additionalContext.indexOf("ALWAYS call `start_*` first"),
     ).toBeLessThan(hookSpecificOutput.additionalContext.indexOf("Check memory before MCP tools."));
   });
 });

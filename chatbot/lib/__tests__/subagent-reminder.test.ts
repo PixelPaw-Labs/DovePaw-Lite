@@ -7,7 +7,9 @@ import {
 
 describe("buildSubAgentReminder", () => {
   it("returns the default reminder when no extra is given", () => {
-    expect(buildSubAgentReminder()).toBe(SUBAGENT_PROMPT_REMINDER);
+    const result = buildSubAgentReminder();
+    expect(result).toContain("ALWAYS call `start_*` first");
+    expect(result).not.toContain("{{extra}}");
   });
 
   it("injects extra inside the reminder tag", () => {
@@ -25,7 +27,7 @@ describe("withMemoryReminder", () => {
   it("appends memory bullet when memoryDir is provided", () => {
     const result = withMemoryReminder("do the thing", "/some/dir");
     expect(result).toContain("do the thing");
-    expect(result).toContain("ASKS A QUESTION NOT ABOUT THIS AGENT");
+    expect(result).toContain("Answer a question without reading memory first");
     expect(result).toContain("/some/dir/memory/MEMORY.md");
     expect(result).toContain("you MUST START the agent");
   });
@@ -33,18 +35,12 @@ describe("withMemoryReminder", () => {
   it("uses hard-gate MUST language", () => {
     const result = withMemoryReminder("do the thing", "/some/dir");
     expect(result).toContain("MUST");
-    expect(result).toContain("NEVER skip");
+    expect(result).toContain("ALWAYS read");
   });
 
-  it("instructs agent to skip to NOT SUFFICIENT when MEMORY.md does not exist", () => {
+  it("escalates when memory is missing or incomplete", () => {
     const result = withMemoryReminder("do the thing", "/some/dir");
-    expect(result).toContain("does not exist");
-    expect(result).toContain("NOT SUFFICIENT");
-  });
-
-  it("requires entire response to be the exact escalation sentence", () => {
-    const result = withMemoryReminder("do the thing", "/some/dir");
+    expect(result).toContain("missing, incomplete");
     expect(result).toContain("ENTIRE response MUST be this exact sentence");
-    expect(result).toContain("no preamble, no explanation, no extra words");
   });
 });
