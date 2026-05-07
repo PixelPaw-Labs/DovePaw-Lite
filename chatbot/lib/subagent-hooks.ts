@@ -9,6 +9,7 @@ import type { HookCallbackMatcher, HookEvent } from "@anthropic-ai/claude-agent-
 import { buildAgentHooks } from "@/lib/hooks";
 import type { PendingRegistry } from "@/lib/pending-registry";
 import { ALWAYS_DISALLOWED_TOOLS } from "@@/lib/security-policy";
+import { buildSubAgentReminder } from "@@/lib/subagent-reminder";
 
 // ─── Builder ──────────────────────────────────────────────────────────────────
 
@@ -19,11 +20,10 @@ export function buildSubAgentHooks(
   registry: PendingRegistry,
   behaviorReminder?: string,
 ): Partial<Record<HookEvent, HookCallbackMatcher[]>> {
-  const trimmed = behaviorReminder?.trim();
   return buildAgentHooks({
     postToolUseMatcher: "mcp__agents__await_.*",
     registry,
-    userPromptReminder: trimmed ? `<reminder>\n${trimmed}\n</reminder>` : undefined,
+    userPromptReminder: buildSubAgentReminder(behaviorReminder),
     allowedDirectories: [cwd, ...additionalDirectories],
     disallowedTools: ALWAYS_DISALLOWED_TOOLS,
   });
