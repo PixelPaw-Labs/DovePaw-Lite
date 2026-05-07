@@ -1,4 +1,5 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
+import type { HookEvent, HookCallbackMatcher } from "@anthropic-ai/claude-agent-sdk";
 import { createWriteStream, writeFileSync } from "node:fs";
 import { access, mkdir, rm, symlink } from "node:fs/promises";
 import { join } from "node:path";
@@ -26,6 +27,7 @@ export interface RunOpts {
   apiKey?: string;
   /** Additional instructions appended to the claude_code preset system prompt. */
   appendSystemPrompt?: string;
+  hooks?: Partial<Record<HookEvent, HookCallbackMatcher[]>>;
 }
 
 /**
@@ -123,6 +125,7 @@ export class ClaudeRunner {
                 },
               }
             : {}),
+          ...(opts.hooks ? { hooks: opts.hooks } : {}),
           abortController: this.abortController,
         },
       });
