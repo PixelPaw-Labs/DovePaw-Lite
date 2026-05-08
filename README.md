@@ -188,7 +188,7 @@ ejson encrypt secrets.ejson   # encrypts in place — safe to commit
 **2. Build and run**
 
 ```bash
-docker compose build
+docker compose build --pull
 docker compose up
 ```
 

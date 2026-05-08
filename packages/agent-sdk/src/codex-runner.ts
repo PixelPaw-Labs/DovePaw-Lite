@@ -85,7 +85,7 @@ export class CodexRunner {
       model: opts.model || "gpt-5.4-mini",
       workingDirectory: opts.cwd || process.cwd(),
       skipGitRepoCheck: opts.skipGitRepoCheck ?? true,
-      approvalPolicy: (opts.approvalPolicy ?? "never") as ApprovalMode,
+      approvalPolicy: opts.approvalPolicy ?? "never",
       ...(opts.additionalDirectories?.length
         ? { additionalDirectories: opts.additionalDirectories }
         : {}),
