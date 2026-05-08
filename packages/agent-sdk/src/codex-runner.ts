@@ -1,5 +1,11 @@
 import { Codex } from "@openai/codex-sdk";
-import type { Thread, WebSearchMode, SandboxMode, CodexOptions, ApprovalMode } from "@openai/codex-sdk";
+import type {
+  Thread,
+  WebSearchMode,
+  SandboxMode,
+  CodexOptions,
+  ApprovalMode,
+} from "@openai/codex-sdk";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 

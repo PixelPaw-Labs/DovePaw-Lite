@@ -1,7 +1,13 @@
 import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { AgentRunner, resolveClaudeSecurityOpts, resolveCodexSandboxMode, resolveCodexApprovalPolicy, resolveCodexWebSearchEnabled } from "./agent-runner.js";
+import {
+  AgentRunner,
+  resolveClaudeSecurityOpts,
+  resolveCodexSandboxMode,
+  resolveCodexApprovalPolicy,
+  resolveCodexWebSearchEnabled,
+} from "./agent-runner.js";
 import { getSecurityModeStrategy } from "./security-policy.js";
 
 const TMP_DIR = join(tmpdir(), `agent-runner-test-${process.pid}`);
@@ -74,11 +80,18 @@ describe("resolveClaudeSecurityOpts", () => {
     const result = resolveClaudeSecurityOpts(undefined, { DOVEPAW_SECURITY_MODE: "read-only" });
     const cb = result.hooks.PreToolUse?.[0].hooks[0];
     const outcome = await cb?.(
-      { hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command: "cat /etc/passwd > /tmp/out.txt" } } as unknown as Parameters<NonNullable<typeof cb>>[0],
+      {
+        hook_event_name: "PreToolUse",
+        tool_name: "Bash",
+        tool_input: { command: "cat /etc/passwd > /tmp/out.txt" },
+      } as unknown as Parameters<NonNullable<typeof cb>>[0],
       undefined,
       { signal: new AbortController().signal },
     );
-    expect((outcome as unknown as { hookSpecificOutput?: { permissionDecision?: string } }).hookSpecificOutput?.permissionDecision).toBe("deny");
+    expect(
+      (outcome as unknown as { hookSpecificOutput?: { permissionDecision?: string } })
+        .hookSpecificOutput?.permissionDecision,
+    ).toBe("deny");
   });
 
   it("disallows WebFetch and WebSearch when DOVEPAW_ALLOW_WEB_TOOLS is absent", () => {
@@ -103,7 +116,11 @@ describe("resolveClaudeSecurityOpts", () => {
     const result = resolveClaudeSecurityOpts(undefined, { DOVEPAW_SECURITY_MODE: "read-only" });
     const cb = result.hooks.PreToolUse?.[0].hooks[0];
     const outcome = await cb?.(
-      { hook_event_name: "PreToolUse", tool_name: "Bash", tool_input: { command: "cat /etc/passwd" } } as unknown as Parameters<NonNullable<typeof cb>>[0],
+      {
+        hook_event_name: "PreToolUse",
+        tool_name: "Bash",
+        tool_input: { command: "cat /etc/passwd" },
+      } as unknown as Parameters<NonNullable<typeof cb>>[0],
       undefined,
       { signal: new AbortController().signal },
     );
@@ -153,7 +170,9 @@ describe("resolveCodexWebSearchEnabled", () => {
   });
 
   it("env var takes precedence over codexOpts.webSearchEnabled false", () => {
-    expect(resolveCodexWebSearchEnabled({ webSearchEnabled: false }, { DOVEPAW_ALLOW_WEB_TOOLS: "1" })).toBe(true);
+    expect(
+      resolveCodexWebSearchEnabled({ webSearchEnabled: false }, { DOVEPAW_ALLOW_WEB_TOOLS: "1" }),
+    ).toBe(true);
   });
 });
 

@@ -60,7 +60,11 @@ export const READ_ONLY_DISALLOWED_TOOLS = [
 export function getSecurityModeStrategy(mode: SecurityMode): SecurityModeStrategy {
   switch (mode) {
     case "read-only":
-      return { permissionMode: "default", readOnly: true, disallowedTools: READ_ONLY_DISALLOWED_TOOLS };
+      return {
+        permissionMode: "default",
+        readOnly: true,
+        disallowedTools: READ_ONLY_DISALLOWED_TOOLS,
+      };
     case "supervised":
       return { permissionMode: "acceptEdits", readOnly: false, disallowedTools: [] };
     case "autonomous":
