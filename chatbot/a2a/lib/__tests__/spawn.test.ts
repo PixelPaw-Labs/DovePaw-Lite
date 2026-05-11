@@ -244,10 +244,6 @@ describe("startScript / awaitScript — latestOutput in still_running", () => {
 
     const result = await awaitPromise;
     expect(result.status).toBe("still_running");
-    if (result.status === "still_running") {
-      // No stdout was emitted so latestLines is empty → latestOutput is undefined
-      expect(result.latestOutput).toBeUndefined();
-    }
   });
 
   it("still_running structuredContent has the expected shape", async () => {

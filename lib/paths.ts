@@ -49,6 +49,9 @@ export const DOVEPAW_AGENT_STATE = join(DOVEPAW_DIR, "agents/state");
 /** ~/.dovepaw-lite/agents/state/.<agentName> — persistent per-agent state directory */
 export const agentPersistentStateDir = (agentName: string) =>
   join(DOVEPAW_AGENT_STATE, `.${agentName}`);
+/** ~/.dovepaw-lite/agents/state/.<agentName>/meta — per-agent runtime metadata directory */
+export const agentPersistentMetaDir = (agentName: string) =>
+  join(agentPersistentStateDir(agentName), "meta");
 /** ~/.dovepaw-lite/logs — process log directory */
 export const DOVEPAW_LOGS_DIR = join(DOVEPAW_DIR, "logs");
 /** ~/.dovepaw-lite/agents/logs — persistent agent log root */

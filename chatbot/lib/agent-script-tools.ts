@@ -7,13 +7,14 @@ import { startScript, awaitScript } from "@/a2a/lib/spawn";
 import type { AgentConfig } from "@/a2a/lib/agent-config-builder";
 import { recloneReposIntoWorkspace } from "@/a2a/lib/workspace";
 import type { PendingRegistry } from "@/lib/pending-registry";
+import { taskRuntime } from "@/lib/task-runtime";
 
 // ─── Script run tool name helpers ─────────────────────────────────────────────
 
 /** Tool name for firing the agent script in the background (start_run_script_* pattern). */
 export const startRunScriptToolName = (manifestKey: string): string => `start_${manifestKey}`;
-/** Tool name for polling a previously started script run (await_run_script_* pattern). */
-export const awaitRunScriptToolName = (manifestKey: string): string => `await_${manifestKey}`;
+/** Tool name for polling a previously started script run (await_script_* pattern). */
+export const awaitRunScriptToolName = (manifestKey: string): string => `await_script_${manifestKey}`;
 // ─── Script run tools ─────────────────────────────────────────────────────────
 
 /** Fires the agent script in the background and returns a runId immediately. */
@@ -76,9 +77,17 @@ export function makeAwaitScriptTool(agent: AgentDef, registry?: PendingRegistry)
       runId: z
         .string()
         .describe(`The runId returned by ${startRunScriptToolName(agent.manifestKey)}`),
+      timeoutMs: z
+        .number()
+        .int()
+        .min(10000)
+        .describe(taskRuntime.buildDescription(agent.name, awaitRunScriptToolName(agent.manifestKey))),
     },
-    async ({ runId }) => {
-      const result = await awaitScript(runId);
+    async ({ runId, timeoutMs }) => {
+      const result = await awaitScript(runId, timeoutMs);
+      if (result.status === "completed") {
+        taskRuntime.append(agent.name, awaitRunScriptToolName(agent.manifestKey), result.durationMs);
+      }
       if (result.status === "completed" || result.status === "not_found") {
         registry?.resolve(runId);
       }
@@ -90,12 +99,7 @@ export function makeAwaitScriptTool(agent: AgentDef, registry?: PendingRegistry)
               result.status === "completed"
                 ? result.output
                 : result.status === "still_running"
-                  ? [
-                      "Agent script is still running...",
-                      result.latestOutput ? `Latest output:\n${result.latestOutput}` : "",
-                    ]
-                      .filter(Boolean)
-                      .join("\n")
+                  ? "still_running"
                   : `⚠️ Run \`${runId}\` not found — it may have completed and been cleaned up.`,
           },
         ],

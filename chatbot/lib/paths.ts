@@ -15,6 +15,7 @@ export {
   agentDefinitionFile,
   agentEntryPath,
   agentPersistentLogDir,
+  agentPersistentMetaDir,
   agentPersistentStateDir,
   portsFile,
   A2A_SERVERS_PID_FILE,
