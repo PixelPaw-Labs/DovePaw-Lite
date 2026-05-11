@@ -2,6 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ─── Module mocks (must come before imports) ──────────────────────────────────
 
+const { setGlobalDispatcherSpy, undiciAgentCtor } = vi.hoisted(() => ({
+  setGlobalDispatcherSpy: vi.fn(),
+  undiciAgentCtor: vi.fn(),
+}));
+
+vi.mock("undici", () => ({
+  Agent: function MockAgent(opts: unknown) {
+    undiciAgentCtor(opts);
+    Object.assign(this as object, { __mockAgent: true, opts });
+  },
+  setGlobalDispatcher: (d: unknown) => setGlobalDispatcherSpy(d),
+}));
+
 vi.mock("@a2a-js/sdk/client", () => ({
   ClientFactory: vi.fn(),
 }));
@@ -39,6 +52,17 @@ function makeClientFactory(clientOverrides: Record<string, unknown>) {
   } as never);
   return client;
 }
+
+// ─── module side effects ──────────────────────────────────────────────────────
+
+describe("a2a-client module side effects", () => {
+  it("installs a global undici dispatcher with body/headers timeouts disabled", () => {
+    expect(undiciAgentCtor).toHaveBeenCalledWith({ bodyTimeout: 0, headersTimeout: 0 });
+    expect(setGlobalDispatcherSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ __mockAgent: true }),
+    );
+  });
+});
 
 // ─── startAgentStream ─────────────────────────────────────────────────────────
 
