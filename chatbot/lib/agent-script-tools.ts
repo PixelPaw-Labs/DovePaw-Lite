@@ -14,7 +14,8 @@ import { taskRuntime } from "@/lib/task-runtime";
 /** Tool name for firing the agent script in the background (start_run_script_* pattern). */
 export const startRunScriptToolName = (manifestKey: string): string => `start_${manifestKey}`;
 /** Tool name for polling a previously started script run (await_script_* pattern). */
-export const awaitRunScriptToolName = (manifestKey: string): string => `await_script_${manifestKey}`;
+export const awaitRunScriptToolName = (manifestKey: string): string =>
+  `await_script_${manifestKey}`;
 // ─── Script run tools ─────────────────────────────────────────────────────────
 
 /** Fires the agent script in the background and returns a runId immediately. */
@@ -81,12 +82,18 @@ export function makeAwaitScriptTool(agent: AgentDef, registry?: PendingRegistry)
         .number()
         .int()
         .min(10000)
-        .describe(taskRuntime.buildDescription(agent.name, awaitRunScriptToolName(agent.manifestKey))),
+        .describe(
+          taskRuntime.buildDescription(agent.name, awaitRunScriptToolName(agent.manifestKey)),
+        ),
     },
     async ({ runId, timeoutMs }) => {
       const result = await awaitScript(runId, timeoutMs);
       if (result.status === "completed") {
-        taskRuntime.append(agent.name, awaitRunScriptToolName(agent.manifestKey), result.durationMs);
+        taskRuntime.append(
+          agent.name,
+          awaitRunScriptToolName(agent.manifestKey),
+          result.durationMs,
+        );
       }
       if (result.status === "completed" || result.status === "not_found") {
         registry?.resolve(runId);

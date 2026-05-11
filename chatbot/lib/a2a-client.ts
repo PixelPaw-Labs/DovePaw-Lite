@@ -113,7 +113,12 @@ export async function* streamCollect(
     };
   };
 
-  const TERMINAL_STATES: ReadonlyArray<TaskFinalState> = ["completed", "failed", "canceled", "rejected"];
+  const TERMINAL_STATES: ReadonlyArray<TaskFinalState> = [
+    "completed",
+    "failed",
+    "canceled",
+    "rejected",
+  ];
   const isTaskFinalState = (s: string): s is TaskFinalState =>
     (TERMINAL_STATES as readonly string[]).includes(s);
 

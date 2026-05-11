@@ -4,7 +4,8 @@ import { agentPersistentMetaDir } from "@@/lib/paths";
 
 const MAX_ENTRIES = 10;
 
-const DELAY_NO_HISTORY = "start with 30000ms. On each still_running halve the previous timeoutMs (min 10000ms).";
+const DELAY_NO_HISTORY =
+  "start with 30000ms. On each still_running halve the previous timeoutMs (min 10000ms).";
 const DELAY_STILL_RUNNING_RULE = "Each still_running → halve previous timeoutMs (min 10000ms).";
 
 function buildDelayPrompt(
@@ -26,11 +27,13 @@ type RuntimeEntry = { toolName: string; durationMs: number; completedAt: string 
 function readAllEntries(file: string): RuntimeEntry[] {
   try {
     if (!existsSync(file)) return [];
-    return readFileSync(file, "utf8")
-      .split("\n")
-      .filter(Boolean)
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-      .map((l) => JSON.parse(l) as RuntimeEntry);
+    return (
+      readFileSync(file, "utf8")
+        .split("\n")
+        .filter(Boolean)
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+        .map((l) => JSON.parse(l) as RuntimeEntry)
+    );
   } catch {
     return [];
   }
