@@ -254,9 +254,7 @@ describe("startScript / awaitScript — latestOutput in still_running", () => {
     vi.advanceTimersByTime(35_000);
 
     const result = await awaitPromise;
-    // Verify structural shape: status and runId always present, latestOutput optional
-    expect(result).toMatchObject({ status: "still_running", runId });
-    expect("latestOutput" in result).toBe(true);
+    expect(result).toEqual({ status: "still_running", runId });
   });
 });
 
